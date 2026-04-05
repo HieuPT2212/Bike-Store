@@ -1,0 +1,222 @@
+<%- include('partials/header') %>
+
+  <!-- Hero Section -->
+  <header class="hero-section">
+    <!-- Unsplash image for Hero -->
+    <img
+      src="https://images.unsplash.com/photo-1532298229144-0ec0c57515c7?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80"
+      alt="Mountain Bike" class="hero-bg-img">
+    <div class="hero-content">
+      <h1 class="hero-title">Đam Mê Bất Tận.<br><span class="text-primary">Giao Dịch An Toàn.</span></h1>
+      <p class="hero-subtitle">Nền tảng mua bán & kiểm định xe đạp thể thao cũ uy tín nhất. Kết nối đúng người, bán đúng
+        giá.</p>
+    </div>
+  </header>
+
+  <!-- Floating Search Bar -->
+  <div class="container">
+    <div class="search-container">
+      <form class="row g-3 align-items-end">
+        <div class="col-md-3">
+          <label class="form-label text-muted small fw-medium">Nhà sản xuất</label>
+          <select class="form-select">
+            <option selected>Tất cả hãng (Giant, Trek...)</option>
+            <option>Giant</option>
+            <option>Trek</option>
+            <option>Specialized</option>
+            <option>Trinx</option>
+          </select>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label text-muted small fw-medium">Loại xe</label>
+          <select class="form-select">
+            <option selected>Chọn loại xe...</option>
+            <option>Địa hình (MTB)</option>
+            <option>Đua (Roadbike)</option>
+            <option>Phố (Touring)</option>
+          </select>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label text-muted small fw-medium">Khoảng giá</label>
+          <select class="form-select">
+            <option selected>Mọi mức giá</option>
+            <option>Dưới 5 triệu</option>
+            <option>5 - 15 triệu</option>
+            <option>Trên 15 triệu</option>
+          </select>
+        </div>
+        <div class="col-md-2 mt-3 mt-md-0">
+          <button type="submit"
+            class="btn btn-primary w-100 py-2 d-flex align-items-center justify-content-center gap-2">
+            <i class="fa-solid fa-magnifying-glass"></i> Tìm Xe
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Featured Bikes Section -->
+  <section class="container py-5 mt-4">
+    <div class="d-flex justify-content-between align-items-end mb-4">
+      <h2 class="section-title mb-0">Xe Đã Kiểm Định Nổi Bật</h2>
+      <a href="/mua-xe" class="text-primary fw-medium text-decoration-none">
+        Xem tất cả <i class="fa-solid fa-arrow-right ms-1"></i>
+      </a>
+    </div>
+
+    <!-- Bootstrap Row for Cards -->
+    <div class="row g-4">
+
+      <!-- Bike Item 1 -->
+      <div class="col-12 col-md-6 col-lg-4">
+        <a href="#" class="text-decoration-none text-dark">
+          <div class="card bike-card">
+            <div class="card-img-wrapper">
+              <span class="badge-inspected"><i class="fa-solid fa-shield-check"></i> Đã có báo cáo kiểm định</span>
+              <img
+                src="https://images.unsplash.com/photo-1485965120184-e220f721d03e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+                class="card-img-top" alt="Giant XTC 800">
+            </div>
+            <div class="card-body p-4">
+              <div class="d-flex justify-content-between align-items-start mb-2">
+                <span class="badge bg-light text-dark mb-2 border">Địa hình (MTB)</span>
+                <span class="text-muted small"><i class="fa-solid fa-location-dot me-1"></i>Hà Nội</span>
+              </div>
+              <h5 class="card-title fw-bold mb-1">Giant XTC 800 Đời 2022</h5>
+              <p class="text-muted small mb-3">Group SRAM NX 12, phuộc hơi, xe trùm mền ít đi...</p>
+
+              <div class="border-top pt-3 mt-0 d-flex justify-content-between align-items-center">
+                <div class="seller-info">
+                  <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="Seller" class="seller-avatar">
+                  <div>
+                    <div class="fw-medium text-dark">Anh Tuấn</div>
+                    <div class="text-warning small">
+                      <i class="fa-solid fa-star"></i> 4.9 (12 GD)
+                    </div>
+                  </div>
+                </div>
+                <div class="price-tag">8.500.000đ</div>
+              </div>
+            </div>
+          </div>
+        </a>
+      </div>
+
+      <!-- Bike Item 2 -->
+      <div class="col-12 col-md-6 col-lg-4">
+        <a href="#" class="text-decoration-none text-dark">
+          <div class="card bike-card">
+            <div class="card-img-wrapper">
+              <span class="badge-inspected"><i class="fa-solid fa-shield-check"></i> Đã có báo cáo kiểm định</span>
+              <img
+                src="https://images.unsplash.com/photo-1507035895480-2b3156c31fc8?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+                class="card-img-top" alt="Trek Madone">
+            </div>
+            <div class="card-body p-4">
+              <div class="d-flex justify-content-between align-items-start mb-2">
+                <span class="badge bg-light text-dark mb-2 border">Đua (Road)</span>
+                <span class="text-muted small"><i class="fa-solid fa-location-dot me-1"></i>TP.HCM</span>
+              </div>
+              <h5 class="card-title fw-bold mb-1">Trek Madone SL6 2021</h5>
+              <p class="text-muted small mb-3">Khung Carbon OCLV 500, Group Ultegra R8000 Zin...</p>
+
+              <div class="border-top pt-3 mt-0 d-flex justify-content-between align-items-center">
+                <div class="seller-info">
+                  <img src="https://randomuser.me/api/portraits/women/44.jpg" alt="Seller" class="seller-avatar">
+                  <div>
+                    <div class="fw-medium text-dark">Linh Bike</div>
+                    <div class="text-warning small">
+                      <i class="fa-solid fa-star"></i> 5.0 (34 GD)
+                    </div>
+                  </div>
+                </div>
+                <div class="price-tag">45.000.000đ</div>
+              </div>
+            </div>
+          </div>
+        </a>
+      </div>
+
+      <!-- Bike Item 3 -->
+      <div class="col-12 col-md-6 col-lg-4">
+        <a href="#" class="text-decoration-none text-dark">
+          <div class="card bike-card">
+            <div class="card-img-wrapper">
+              <img
+                src="https://images.unsplash.com/photo-1576435728678-68d0fbf94e91?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+                class="card-img-top" alt="Trinx TX 16">
+            </div>
+            <div class="card-body p-4">
+              <div class="d-flex justify-content-between align-items-start mb-2">
+                <span class="badge bg-light text-dark mb-2 border">Phố (Touring)</span>
+                <span class="text-muted small"><i class="fa-solid fa-location-dot me-1"></i>Đà Nẵng</span>
+              </div>
+              <h5 class="card-title fw-bold mb-1">Trinx Free 2.0 2023</h5>
+              <p class="text-muted small mb-3">Mới đi lướt vài vòng hồ, còn bảo hành chính hãng...</p>
+
+              <div class="border-top pt-3 mt-0 d-flex justify-content-between align-items-center">
+                <div class="seller-info">
+                  <img src="https://randomuser.me/api/portraits/men/85.jpg" alt="Seller" class="seller-avatar">
+                  <div>
+                    <div class="fw-medium text-dark">Hải Phước</div>
+                    <div class="text-muted small">
+                      Thành viên mới
+                    </div>
+                  </div>
+                </div>
+                <div class="price-tag">3.200.000đ</div>
+              </div>
+            </div>
+          </div>
+        </a>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- How it works (Why choose us) -->
+  <section class="bg-white py-5 mt-5 border-top">
+    <div class="container py-4">
+      <div class="text-center mb-5">
+        <h2 class="fw-bold">Tại sao chọn CrankUp?</h2>
+        <p class="text-muted">Giao dịch mua bán xe đạp cũ chưa bao giờ an toàn và minh bạch đến thế.</p>
+      </div>
+      <div class="row g-4 text-center">
+        <div class="col-md-4">
+          <div class="mb-3">
+            <div class="bg-light rounded-circle d-inline-flex align-items-center justify-content-center"
+              style="width: 80px; height: 80px;">
+              <i class="fa-solid fa-user-shield fs-1 text-primary"></i>
+            </div>
+          </div>
+          <h5 class="fw-bold">Người Dùng 100% Xác Thực</h5>
+          <p class="text-muted small px-3">Hệ thống đánh giá chéo giữa các thành viên, triệt tiêu tài khoản ảo và lừa
+            đảo.</p>
+        </div>
+        <div class="col-md-4">
+          <div class="mb-3">
+            <div class="bg-light rounded-circle d-inline-flex align-items-center justify-content-center"
+              style="width: 80px; height: 80px;">
+              <i class="fa-solid fa-clipboard-check fs-1 text-primary"></i>
+            </div>
+          </div>
+          <h5 class="fw-bold">Chuyên Gia Kiểm Định (Inspector)</h5>
+          <p class="text-muted small px-3">Có báo cáo chi tiết về tình trạng khung, phanh, đĩa líp... do đội ngũ chuyên
+            nghiệp thẩm định trước giao dịch.</p>
+        </div>
+        <div class="col-md-4">
+          <div class="mb-3">
+            <div class="bg-light rounded-circle d-inline-flex align-items-center justify-content-center"
+              style="width: 80px; height: 80px;">
+              <i class="fa-solid fa-handshake-angle fs-1 text-primary"></i>
+            </div>
+          </div>
+          <h5 class="fw-bold">Hỗ Trợ Giao Dịch Chuyên Sâu</h5>
+          <p class="text-muted small px-3">Cung cấp bộ công cụ nhắn tin, thỏa thuận giá cả và quy trình trung gian thanh
+            toán.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <%- include('partials/footer') %>
