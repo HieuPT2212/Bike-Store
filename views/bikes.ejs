@@ -1,0 +1,174 @@
+<%- include('partials/header') %>
+
+<!-- Spacer offset cho thanh điều hướng Navbar (Fix dính trên trần) -->
+<div style="margin-top: 85px;"></div>
+
+<div class="container py-4 my-3 bg-white shadow-sm rounded-4">
+  <!-- Đường dẫn phân cấp (Breadcrumbs) -->
+  <nav aria-label="breadcrumb" class="mb-4 px-2">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="/" class="text-decoration-none fw-medium text-primary">Trang chủ</a></li>
+      <li class="breadcrumb-item active text-muted" aria-current="page">Mua Xe Đạp Thể Thao Cũ</li>
+    </ol>
+  </nav>
+
+  <div class="row g-4 mt-1">
+    <!-- CỘT BÊN TRÁI: Thanh tìm kiếm & Thanh Lọc (Sidebar) -->
+    <aside class="col-lg-3 border-end pe-lg-4">
+      <div class="mb-5">
+        <h5 class="fw-bold mb-4 d-flex align-items-center"><i class="fa-solid fa-filter text-primary me-2"></i> Lọc Kết Quả</h5>
+        
+        <!-- Nhóm lọc: Hãng Xe -->
+        <h6 class="fw-bold mb-3 text-dark">Hãng Sản Xuất</h6>
+        <div class="form-check mb-2">
+          <input class="form-check-input" type="checkbox" value="" id="brandGiant" checked>
+          <label class="form-check-label text-muted" for="brandGiant">Giant</label>
+        </div>
+        <div class="form-check mb-2">
+          <input class="form-check-input" type="checkbox" value="" id="brandTrek">
+          <label class="form-check-label text-muted" for="brandTrek">Trek</label>
+        </div>
+        <div class="form-check mb-2">
+          <input class="form-check-input" type="checkbox" value="" id="brandTrinx">
+          <label class="form-check-label text-muted" for="brandTrinx">Trinx</label>
+        </div>
+        <div class="form-check mb-2">
+          <input class="form-check-input" type="checkbox" value="" id="brandSpecialized">
+          <label class="form-check-label text-muted" for="brandSpecialized">Specialized / S-Works</label>
+        </div>
+      </div>
+
+      <hr class="text-muted opacity-25">
+
+      <!-- Nhóm lọc: Mức Giá -->
+      <div class="mb-5 mt-4">
+        <h6 class="fw-bold mb-3 text-dark">Mức Giá</h6>
+        <select class="form-select text-muted shadow-none bg-light border-0 py-2">
+          <option selected>Tất cả mức giá</option>
+          <option>Dưới 5 Triệu VNĐ</option>
+          <option>Từ 5 - 15 Triệu VNĐ</option>
+          <option>Từ 15 - 50 Triệu VNĐ</option>
+          <option>Trên 50 Triệu VNĐ</option>
+        </select>
+      </div>
+
+      <hr class="text-muted opacity-25">
+
+      <!-- Nút Gạt: Cờ "Xe Đã Kiểm Định" do chuyên gia cấp -->
+      <div class="mb-4 mt-4 bg-light p-3 rounded-3 border">
+        <div class="form-check form-switch d-flex align-items-center gap-2 m-0 p-0">
+          <input class="form-check-input ms-0 mt-0" type="checkbox" role="switch" id="switchInspected" style="width: 40px; height: 20px;" checked>
+          <label class="form-check-label fw-medium text-dark ms-2" for="switchInspected" style="font-size: 0.95rem;">
+            Chỉ hiển thị xe có <br><i class="fa-solid fa-shield-check text-success"></i> Tem Chuyên Gia
+          </label>
+        </div>
+      </div>
+
+      <button class="btn btn-primary w-100 py-2 mt-2 fw-bold text-uppercase box-shadow-hover">
+        <i class="fa-solid fa-list-check me-1"></i> Áp Dụng Lọc
+      </button>
+    </aside>
+
+    <!-- CỘT BÊN PHẢI: Lưới hiển thị danh sách Xe Phù Hợp (Grid Cards) -->
+    <main class="col-lg-9 ps-lg-4">
+      <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 pb-3 border-bottom">
+        <!-- Đổ tự động số lượng xe -->
+        <h4 class="fw-bold mb-3 mb-md-0 text-dark">Đã tìm thấy <span class="text-primary"><%= bikes ? bikes.length : 0 %></span> mẫu xe</h4>
+        <div class="d-flex align-items-center gap-2">
+          <span class="text-muted small text-nowrap">Sắp xếp theo:</span>
+          <select class="form-select w-auto shadow-none text-dark bg-light border-0 form-select-sm py-2 px-3 fw-medium">
+            <option selected>Tương thích nhất</option>
+            <option>Mới đăng gần đây</option>
+            <option>Giá: Tăng dần</option>
+            <option>Giá: Giảm dần</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- KHU VỰC ĐỔ DỮ LIỆU ĐỘNG TỪ NODEJS SANG EJS BẰNG VÒNG LẶP -->
+      <div class="row g-4">
+        <% if(bikes && bikes.length > 0) { %>
+          <% bikes.forEach(function(bike) { %>
+            <div class="col-12 col-md-6 col-xl-4">
+              <a href="/bike/<%= bike.id %>" class="text-decoration-none text-dark">
+                <div class="card bike-card h-100 border-0 bg-light">
+                  <div class="card-img-wrapper">
+                    <!-- Logical IF: Hiện Badge nếu is_inspected là TRUE -->
+                    <% if(bike.is_inspected) { %>
+                      <span class="badge-inspected"><i class="fa-solid fa-shield-check"></i> Đã có báo cáo kiểm định</span>
+                    <% } %>
+                    <img src="<%= bike.img_url %>" class="card-img-top object-fit-cover" alt="<%= bike.name %>" style="height: 200px;">
+                  </div>
+
+                  <div class="card-body p-4 d-flex flex-column bg-white rounded-bottom-4 shadow-sm">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                      <span class="badge bg-secondary bg-opacity-10 text-dark border px-2 py-1"><%= bike.category %></span>
+                      <span class="text-muted small fw-medium"><i class="fa-solid fa-location-dot text-danger me-1"></i><%= bike.location %></span>
+                    </div>
+                    
+                    <h5 class="card-title fw-bold mb-2 text-truncate" title="<%= bike.name %>"><%= bike.name %></h5>
+                    <p class="text-muted small mb-4" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; height: 40px;">
+                      <%= bike.desc %>
+                    </p>
+                    
+                    <div class="border-top pt-3 mt-auto d-flex justify-content-between align-items-center">
+                      <!-- Thông tin người bán -->
+                      <div class="seller-info d-flex align-items-center gap-2">
+                        <img src="<%= bike.seller_avatar %>" alt="Avatar" class="rounded-circle object-fit-cover" width="35" height="35">
+                        <div class="d-flex flex-column">
+                          <span class="fw-bold text-dark" style="font-size: 0.85rem;"><%= bike.seller_name %></span>
+                          <span class="text-warning fw-medium" style="font-size: 0.75rem;">
+                            <i class="fa-solid fa-star"></i> <%= bike.seller_rating %> / 5.0
+                          </span>
+                        </div>
+                      </div>
+                      <!-- Giá tiền tự động định dạng -->
+                      <div class="price-tag fw-bold text-primary fs-5">
+                        <%= new Intl.NumberFormat('vi-VN').format(bike.price) %><span class="fs-6 text-muted ms-1">đ</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </a>
+            </div>
+          <% }); %>
+        <% } else { %>
+          <!-- Trường hợp rẽ nhánh ELSE khi Database không truy xuất được kết quả -->
+          <div class="col-12 text-center py-5">
+            <div class="p-5 bg-light border rounded-4 border-dashed">
+              <i class="fa-solid fa-box-open fa-4x text-secondary mb-3 opacity-50"></i>
+              <h5 class="text-dark fw-bold">Hiện không có chiếc xe nào!</h5>
+              <p class="text-muted">Bộ lọc đang giới hạn kết quả, hãy thử bỏ bớt điều kiện lọc hoặc quay lại sau.</p>
+              <button class="btn btn-outline-primary mt-3 px-4 rounded-pill">Xóa toàn bộ bộ lọc</button>
+            </div>
+          </div>
+        <% } %>
+      </div>
+
+      <!-- Thanh phân trang (Pagination) Tĩnh -->
+      <% if(bikes && bikes.length > 0) { %>
+        <nav aria-label="Page navigation" class="mt-5 pt-4 border-top">
+          <ul class="pagination justify-content-center gap-2 border-0">
+            <li class="page-item disabled"><a class="page-link border-0 text-muted rounded bg-light" href="#"><i class="fa-solid fa-angle-left"></i></a></li>
+            <li class="page-item active"><a class="page-link bg-primary border-primary rounded text-white shadow-sm fw-bold px-3" href="#">1</a></li>
+            <li class="page-item"><a class="page-link border-0 text-dark rounded bg-light hover-bg-primary px-3" href="#">2</a></li>
+            <li class="page-item"><a class="page-link border-0 text-dark rounded bg-light hover-bg-primary px-3" href="#">3</a></li>
+            <li class="page-item"><a class="page-link border-0 text-dark rounded bg-light" href="#"><i class="fa-solid fa-angle-right"></i></a></li>
+          </ul>
+        </nav>
+      <% } %>
+    </main>
+  </div>
+</div>
+
+<!-- Lập thêm hiệu ứng CSS nội bộ xịn xò -->
+<style>
+  .border-dashed { border-style: dashed !important; border-width: 2px !important;}
+  .bike-card { transition: all 0.3s ease; }
+  .bike-card:hover { transform: translateY(-7px) scale(1.01); box-shadow: 0 15px 30px rgba(0,0,0,0.08) !important;}
+  .hover-bg-primary { transition: 0.2s;}
+  .hover-bg-primary:hover { background-color: var(--primary-color) !important; color: white !important; }
+  .box-shadow-hover:hover { box-shadow: 0 8px 15px rgba(255, 71, 19, 0.3); }
+</style>
+
+<%- include('partials/footer') %>
