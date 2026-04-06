@@ -1,4 +1,5 @@
 <%- include('partials/header') %>
+<link rel="stylesheet" href="/assets/css/bikes.css">
 
 <!-- Spacer offset cho thanh điều hướng Navbar (Fix dính trên trần) -->
 <div style="margin-top: 85px;"></div>
@@ -107,7 +108,7 @@
                     </div>
                     
                     <h5 class="card-title fw-bold mb-2 text-truncate" title="<%= bike.name %>"><%= bike.name %></h5>
-                    <p class="text-muted small mb-4" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; height: 40px;">
+                    <p class="text-muted small mb-4" style="display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; height: 40px;">
                       <%= bike.desc %>
                     </p>
                     
@@ -160,15 +161,5 @@
     </main>
   </div>
 </div>
-
-<!-- Lập thêm hiệu ứng CSS nội bộ xịn xò -->
-<style>
-  .border-dashed { border-style: dashed !important; border-width: 2px !important;}
-  .bike-card { transition: all 0.3s ease; }
-  .bike-card:hover { transform: translateY(-7px) scale(1.01); box-shadow: 0 15px 30px rgba(0,0,0,0.08) !important;}
-  .hover-bg-primary { transition: 0.2s;}
-  .hover-bg-primary:hover { background-color: var(--primary-color) !important; color: white !important; }
-  .box-shadow-hover:hover { box-shadow: 0 8px 15px rgba(255, 71, 19, 0.3); }
-</style>
 
 <%- include('partials/footer') %>

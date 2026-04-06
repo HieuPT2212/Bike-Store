@@ -1,0 +1,28 @@
+/* File CSS riêng biệt cho trang danh sách xe (/bikes) */
+
+.border-dashed { 
+    border-style: dashed !important; 
+    border-width: 2px !important;
+}
+
+.bike-card { 
+    transition: all 0.3s ease; 
+}
+
+.bike-card:hover { 
+    transform: translateY(-7px) scale(1.01); 
+    box-shadow: 0 15px 30px rgba(0,0,0,0.08) !important;
+}
+
+.hover-bg-primary { 
+    transition: 0.2s;
+}
+
+.hover-bg-primary:hover { 
+    background-color: var(--primary-color) !important; 
+    color: white !important; 
+}
+
+.box-shadow-hover:hover { 
+    box-shadow: 0 8px 15px rgba(255, 71, 19, 0.3); 
+}

@@ -1,0 +1,147 @@
+<%- include('partials/header') %>
+<link rel="stylesheet" href="/assets/css/bike-detail.css">
+
+<!-- Spacer offset cho thanh điều hướng Navbar -->
+<div style="margin-top: 85px;"></div>
+
+<div class="container py-4 my-2">
+  <!-- Breadcrumb -->
+  <nav aria-label="breadcrumb" class="mb-4">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="/" class="text-decoration-none fw-medium text-primary">Trang chủ</a></li>
+      <li class="breadcrumb-item"><a href="/bikes" class="text-decoration-none fw-medium text-primary">Mua Xe</a></li>
+      <li class="breadcrumb-item active text-muted" aria-current="page"><%= bike.name %></li>
+    </ol>
+  </nav>
+
+  <div class="row g-5">
+    <!-- Cột TRÁI: Hình ảnh và Mô Tả Chi Tiết -->
+    <div class="col-lg-8">
+      
+      <!-- Thư viện Ảnh (Gallery) -->
+      <div class="bike-gallery mb-5">
+        <!-- Ảnh Lớn -->
+        <div class="main-image-container rounded-4 overflow-hidden shadow-sm mb-3 position-relative bg-light border">
+          <% if(bike.is_inspected) { %>
+            <div class="position-absolute top-0 start-0 m-3 z-2">
+              <span class="badge bg-success bg-opacity-75 text-white px-3 py-2 rounded-pill shadow-sm fs-6">
+                <i class="fa-solid fa-shield-check me-1"></i> Có Tem Kiểm Định
+              </span>
+            </div>
+          <% } %>
+          <img src="<%= bike.images[0] %>" alt="<%= bike.name %>" class="w-100 object-fit-cover main-image" style="height: 500px;" id="mainImageDisplay">
+        </div>
+        
+        <!-- Ảnh Nhỏ (Thumbnails) bằng JS DOM thay đổi hình chiếu -->
+        <div class="row g-2">
+          <% bike.images.forEach(function(imgUrl, index) { %>
+            <div class="col-3 col-md-2">
+              <div class="thumbnail-wrapper rounded-3 overflow-hidden border <%= index===0 ? 'border-primary border-2' : '' %>" 
+                   style="cursor: pointer; height: 80px;" 
+                   onclick="document.getElementById('mainImageDisplay').src=this.querySelector('img').src; 
+                            document.querySelectorAll('.thumbnail-wrapper').forEach(e => {e.classList.remove('border-primary'); e.classList.remove('border-2');}); 
+                            this.classList.add('border-primary'); this.classList.add('border-2');">
+                <img src="<%= imgUrl %>" class="w-100 h-100 object-fit-cover" alt="Ảnh góc khác">
+              </div>
+            </div>
+          <% }); %>
+        </div>
+      </div>
+
+      <!-- Mô Tả & Thông số File PDF -->
+      <div class="bg-white rounded-4 shadow-sm p-4 p-md-5 mb-4 border">
+        <h4 class="fw-bold mb-4 text-dark border-bottom pb-3">Chi tiết & Mô tả sản phẩm</h4>
+        
+        <!-- Dải cảnh báo Báo cáo Kiểm Định PDF -->
+        <div class="alert alert-primary bg-primary bg-opacity-10 border-0 text-dark d-flex flex-column flex-md-row align-items-md-center mb-4 rounded-3 p-3">
+          <i class="fa-solid fa-file-pdf fs-1 text-danger me-md-4 mb-3 mb-md-0 d-none d-md-block"></i>
+          <div>
+            <h5 class="fw-bold mb-1"><i class="fa-solid fa-file-pdf text-danger d-md-none me-2"></i> Báo Cáo Kiểm Định Phanh & Khung (PDF)</h5>
+            <span class="small text-muted">Được thẩm định bởi kỹ thuật viên độc lập CrankUp vào ngày <%= bike.inspection_date %></span>
+          </div>
+          <button class="btn btn-primary ms-md-auto mt-3 mt-md-0 d-flex align-items-center justify-content-center gap-2 px-4 shadow-sm">
+            <i class="fa-solid fa-download"></i> Hiển Thị PDF
+          </button>
+        </div>
+
+        <div class="bike-description text-muted" style="line-height: 1.8; white-space: pre-wrap; font-size: 1.05rem;"><%= bike.desc %></div>
+      </div>
+    </div>
+
+    <!-- Cột PHẢI: Bảng Giá, Thao tác, và Thông tin Seller -->
+    <div class="col-lg-4">
+      
+      <!-- Box Mua Hàng -->
+      <div class="bg-white rounded-4 shadow-sm p-4 mb-4 position-sticky border" style="top: 100px;">
+        <h3 class="card-title fw-bold text-dark mb-2 lh-base"><%= bike.name %></h3>
+        
+        <!-- Giá tiền -->
+        <div class="d-flex justify-content-between align-items-center py-3 border-bottom mb-4 mt-2">
+          <span class="fs-2 fw-bold text-primary"><%= new Intl.NumberFormat('vi-VN').format(bike.price) %><span class="fs-4 text-muted ms-1">đ</span></span>
+          <span class="badge bg-light text-dark border px-3 py-2 fs-6"><%= bike.condition %></span>
+        </div>
+
+        <!-- Bảng thông số nhanh -->
+        <ul class="list-unstyled mb-4">
+          <li class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom border-light">
+            <span class="text-muted"><i class="fa-solid fa-folder text-secondary me-2 w-20"></i> Phân loại:</span>
+            <span class="fw-medium text-dark"><%= bike.category %></span>
+          </li>
+          <li class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom border-light">
+            <span class="text-muted"><i class="fa-brands fa-dribbble text-secondary me-2 w-20"></i> Thương hiệu:</span>
+            <span class="fw-medium text-dark"><%= bike.brand %></span>
+          </li>
+          <li class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom border-light">
+            <span class="text-muted"><i class="fa-solid fa-ruler-horizontal text-secondary me-2 w-20"></i> Size Khung:</span>
+            <span class="fw-medium text-dark"><%= bike.frame_size %></span>
+          </li>
+          <li class="d-flex justify-content-between align-items-center mb-2">
+            <span class="text-muted"><i class="fa-solid fa-location-crosshairs text-secondary me-2 w-20"></i> Khu vực:</span>
+            <span class="fw-medium text-dark"><%= bike.location %></span>
+          </li>
+        </ul>
+
+        <!-- Hành Động Mua Bán -->
+        <button class="btn btn-primary w-100 py-3 rounded-3 fw-bold fs-5 shadow-sm text-uppercase mb-3 seller-btn-hover" aria-label="Order bike button">
+          <i class="fa-solid fa-money-bill-wave me-1"></i> Tiến Hành Đặt Cọc
+        </button>
+        <div class="d-flex gap-2">
+          <button class="btn btn-outline-primary flex-grow-1 py-2 rounded-3 fw-medium d-flex justify-content-center align-items-center gap-2 border-2">
+            <i class="fa-solid fa-comments"></i> Mặc Cả
+          </button>
+          <button class="btn btn-outline-secondary py-2 px-3 rounded-3 fw-medium d-flex justify-content-center align-items-center border-2">
+            <i class="fa-regular fa-heart"></i>
+          </button>
+        </div>
+
+      </div>
+
+      <!-- Box Thông Tin Seller -->
+      <div class="bg-white rounded-4 shadow-sm p-4 mt-4 text-center border">
+        <h6 class="fw-bold mb-3 text-start text-dark">Thông tin người bán</h6>
+        
+        <img src="<%= bike.seller.avatar %>" alt="<%= bike.seller.name %>" class="rounded-circle object-fit-cover mb-3" width="85" height="85" style="border: 4px solid #f8f9fa;">
+        
+        <h5 class="fw-bold mb-1 text-dark"><%= bike.seller.name %> <i class="fa-solid fa-circle-check text-primary fs-6" title="Đã xác thực danh tính"></i></h5>
+        
+        <div class="d-flex justify-content-center align-items-center gap-3 mb-4 text-muted small mt-2">
+          <span><i class="fa-solid fa-star text-warning"></i> <%= bike.seller.rating %> Uy Tín</span>
+          <span class="border-start ps-3">Gia nhập: <%= bike.seller.join_date %></span>
+        </div>
+
+        <div class="p-3 bg-light rounded-3 d-flex justify-content-between align-items-center mb-0 border shadow-sm h-100">
+          <div class="text-start">
+            <div class="small text-muted mb-1"><i class="fa-solid fa-shield-halved text-success me-1"></i> Số điện thoại:</div>
+            <div class="fw-bold text-dark fs-5"><%= bike.seller.phone %></div>
+          </div>
+          <button class="btn btn-success rounded-circle shadow border-0 d-flex justify-content-center align-items-center" style="width: 50px; height: 50px;" onclick="alert('Tính năng liên hệ Zalo đang được phát triển!')">
+            <i class="fa-solid fa-phone fs-5"></i>
+          </button>
+        </div>
+      </div>
+      
+    </div>
+  </div>
+</div>
+
+<%- include('partials/footer') %>

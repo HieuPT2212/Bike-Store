@@ -115,7 +115,34 @@ app.get('/bikes', (req, res) => {
 // Các trang tĩnh hoặc đang xây dựng
 app.get('/sell', (req, res) => res.send('<h1 style="text-align:center; margin-top:50px;">Trang Đăng Bán Xe (Seller) đang được xây dựng...</h1><div style="text-align:center"><a href="/">Về trang chủ</a></div>'));
 app.get('/about', (req, res) => res.send('<h1 style="text-align:center; margin-top:50px;">Về CrankUp - Hệ thống kết nối mua bán xe đạp...</h1><div style="text-align:center"><a href="/">Về trang chủ</a></div>'));
-app.get('/bike/:id', (req, res) => res.send('<h1 style="text-align:center; margin-top:50px;">Trang Chi Tiết Xe Đạp số ' + req.params.id + ' đang được thiết kế...</h1><div style="text-align:center"><a href="/bikes">Quay lại danh sách</a></div>'));
+app.get('/bike/:id', (req, res) => {
+  const mockBike = {
+    id: req.params.id,
+    name: 'Giant XTC 800 Đời Mới Nhất Bản Quốc Tế',
+    category: 'Địa hình (MTB)',
+    location: 'Hà Nội',
+    brand: 'Giant',
+    condition: 'Mới 95%',
+    frame_size: 'M (1m65-1m75)',
+    price: 12500000,
+    is_inspected: true,
+    inspection_date: '04/04/2026',
+    desc: 'Giảm xóc khí kép, xích hợp kim chịu lực, phuộc hơi xịn. Đã bảo dưỡng mỡ bò trơn tru. \n\nXe chủ yếu đi lòng vòng công viên nên lớp sơn còn cực kỳ bóng bẩy, chưa hề có dấu hiệu móp méo nứt gãy. Bộ truyền động sang số cực êm ái.\n- Bánh xe hợp kim nhôm.\n- Phanh đĩa dầu thủy lực siêu nhạy.\n- Chắn bùn được tặng kèm theo cho ai nhiệt tình.',
+    images: [
+      'https://images.unsplash.com/photo-1485965120184-e220f721d03e?ixlib=rb-4.0.3&w=1200&q=80',
+      'https://images.unsplash.com/photo-1511994298241-608e28f14fde?ixlib=rb-4.0.3&w=1200&q=80',
+      'https://images.unsplash.com/photo-1576435728678-68d0fbf94e91?ixlib=rb-4.0.3&w=1200&q=80'
+    ],
+    seller: {
+      name: 'Hoàng Anh',
+      avatar: 'https://randomuser.me/api/portraits/men/32.jpg',
+      rating: 4.8,
+      join_date: 'Tháng 12, 2024',
+      phone: '0987.xxx.xxx'
+    }
+  };
+  res.render('bike-detail', { bike: mockBike });
+});
 
 // Lắng nghe trên cổng 3000
 app.listen(port, () => {

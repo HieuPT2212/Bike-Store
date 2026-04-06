@@ -1,0 +1,28 @@
+/* File CSS riêng biệt cho trang Báo cáo chi tiết xe (/bike/:id) */
+
+.w-20 { 
+    width: 20px; 
+    text-align: center; 
+} 
+
+.main-image { 
+    transition: opacity 0.3s ease-in-out; 
+}
+
+.thumbnail-wrapper { 
+    transition: all 0.2s; 
+}
+
+.thumbnail-wrapper:hover { 
+    border-color: var(--primary-color) !important; 
+    opacity: 0.8;
+}
+
+.seller-btn-hover:hover { 
+    transform: translateY(-2px); 
+    box-shadow: 0 10px 20px rgba(255, 71, 19, 0.4) !important;
+}
+
+.border-2 { 
+    border-width: 2px !important; 
+}
