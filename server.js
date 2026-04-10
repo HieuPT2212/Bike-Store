@@ -1,13 +1,35 @@
 const express = require('express');
-const mysql = require('mysql2');
-const path = require('path');
-require('dotenv').config();
-
 const app = express();
 const port = 3000;
+const mysql = require('mysql2');
+const session = require('express-session');
+const bcrypt = require('bcryptjs');
+const path = require('path');
 
-// Cấu hình View Engine là EJS để phân tách HTML components
+// --- Cấu hình Middleware cơ bản --- //
 app.set('view engine', 'ejs');
+app.use(express.static('public'));
+
+// Đọc dữ liệu từ Form (POST) và gán Session
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
+
+app.use(session({
+  secret: 'CrankUp_Secret_Key_22122005',
+  resave: false,
+  saveUninitialized: true,
+  cookie: { maxAge: 1000 * 60 * 60 * 24 } // Lưu phiên 24 tiếng
+}));
+
+// Gắn phân quyền Global cho mọi giao diện EJS
+app.use((req, res, next) => {
+  res.locals.user = req.session.user || null;
+  res.locals.error_msg = req.session.error_msg || null;
+  res.locals.success_msg = req.session.success_msg || null;
+  req.session.error_msg = null; 
+  req.session.success_msg = null;
+  next();
+});
 app.set('views', path.join(__dirname, 'views'));
 
 // Cấu hình thư mục Public chứa CSS, JS, Images (Bootstrap offline)
@@ -113,6 +135,100 @@ app.get('/bikes', (req, res) => {
 });
 
 // Các trang tĩnh hoặc đang xây dựng
+// Trạm Đăng Nhập / Đăng Ký (Auth)
+app.get('/login', (req, res) => res.render('auth/login'));
+app.get('/register', (req, res) => res.render('auth/register'));
+
+// API: Xử lý Submit Form Đăng Ký
+app.post('/register', async (req, res) => {
+  const { full_name, phone, email, role, password, confirm_password } = req.body;
+
+  if (password !== confirm_password) {
+    req.session.error_msg = 'Mật khẩu cài đặt và nhập lại không khớp!';
+    return res.redirect('/register');
+  }
+
+  try {
+    // 1. Kiểm tra xem Email đã bị người khác đăng ký chưa
+    db.query('SELECT email FROM USERS WHERE email = ?', [email], async (err, results) => {
+      if (err) {
+        req.session.error_msg = 'Lỗi kết nối CSDL, thử lại sau.';
+        return res.redirect('/register');
+      }
+      
+      if (results.length > 0) {
+        req.session.error_msg = 'Email này đã tồn tại trong hệ thống CrankUp!';
+        return res.redirect('/register');
+      }
+
+      // 2. Băm Mật Khẩu (Hashing) để chống Hacker
+      const salt = await bcrypt.genSalt(10);
+      const hashedPassword = await bcrypt.hash(password, salt);
+
+      // 3. Đút dữ liệu sạch vào Database
+      const query = `INSERT INTO USERS (full_name, email, phone, password_hash, role) VALUES (?, ?, ?, ?, ?)`;
+      db.query(query, [full_name, email, phone, hashedPassword, role], (err, result) => {
+        if (err) {
+            req.session.error_msg = 'Có lỗi xảy ra khi lưu trữ thông tin!';
+            return res.redirect('/register');
+        }
+        req.session.success_msg = 'Chúc mừng bạn gia nhập CrankUp! Hãy đăng nhập để duyệt xe nhé.';
+        res.redirect('/login'); // Chuyển chớp nhoáng sang trang Đăng Nhập
+      });
+    });
+  } catch (error) {
+    req.session.error_msg = 'Lỗi máy chủ nội bộ!';
+    res.redirect('/register');
+  }
+});
+
+// API: Xử lý Submit Form Đăng Nhập
+app.post('/login', (req, res) => {
+  const { email, password } = req.body;
+  
+  // 1. Mò tìm người dùng theo Email
+  db.query('SELECT * FROM USERS WHERE email = ?', [email], async (err, results) => {
+    if (err) {
+        req.session.error_msg = 'Dịch vụ CSDL đang bảo trì!';
+        return res.redirect('/login');
+    }
+    
+    // Nếu rỗng (Tức là không ai xài email này)
+    if (results.length === 0) {
+      req.session.error_msg = 'Email hoặc tài khoản không tồn tại.';
+      return res.redirect('/login');
+    }
+
+    const user = results[0];
+    
+    // 2. So găng mật khẩu ngón tay với mật khẩu băm trong DB
+    const isMatch = await bcrypt.compare(password, user.password_hash);
+    
+    if (!isMatch) {
+      req.session.error_msg = 'Mật khẩu sai, xin mời nhập lại.';
+      return res.redirect('/login');
+    }
+
+    // 3. Đăng nhập SIÊU CẤP THÀNH CÔNG -> Gắn the Cookies Session!
+    req.session.user = {
+      id: user.id,
+      full_name: user.full_name,
+      email: user.email,
+      role: user.role,
+      rating_score: user.rating_score
+    };
+    
+    // Trả khách hàng về giao diện chính
+    res.redirect('/'); 
+  });
+});
+
+// API: Đăng xuất Tài khoản Khỏi Hệ Thống (Huỷ Cookie)
+app.get('/logout', (req, res) => {
+  req.session.destroy();
+  res.redirect('/login');
+});
+
 app.get('/sell', (req, res) => res.send('<h1 style="text-align:center; margin-top:50px;">Trang Đăng Bán Xe (Seller) đang được xây dựng...</h1><div style="text-align:center"><a href="/">Về trang chủ</a></div>'));
 app.get('/about', (req, res) => res.send('<h1 style="text-align:center; margin-top:50px;">Về CrankUp - Hệ thống kết nối mua bán xe đạp...</h1><div style="text-align:center"><a href="/">Về trang chủ</a></div>'));
 app.get('/bike/:id', (req, res) => {

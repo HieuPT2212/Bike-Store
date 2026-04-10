@@ -40,9 +40,29 @@
             <a class="nav-link px-3" href="/about">Về chúng tôi</a>
           </li>
         </ul>
-        <div class="d-flex gap-2">
-          <a href="#" class="btn btn-outline-dark fw-medium px-4">Đăng nhập</a>
-          <a href="#" class="btn btn-primary px-4">Đăng ký</a>
+        <div class="d-flex gap-2 align-items-center">
+          <% if(user) { %>
+            <!-- Trạng thái ĐÃ đăng nhập -->
+            <div class="dropdown">
+              <a href="#" class="text-decoration-none dropdown-toggle d-flex align-items-center gap-2 text-dark fw-medium" data-bs-toggle="dropdown" aria-expanded="false">
+                <img src="https://ui-avatars.com/api/?name=<%= encodeURIComponent(user.full_name) %>&background=random" 
+                     alt="Avatar" class="rounded-circle shadow-sm" width="35" height="35">
+                <span><%= user.full_name %></span>
+              </a>
+              <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 mt-2">
+                <li><a class="dropdown-item py-2" href="#"><i class="fa-regular fa-user me-2 text-muted"></i>Hồ sơ cá nhân</a></li>
+                <% if(user.role === 'Seller') { %>
+                  <li><a class="dropdown-item py-2" href="/sell"><i class="fa-solid fa-store me-2 text-muted"></i>Quản lý cửa hàng</a></li>
+                <% } %>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item text-danger py-2" href="/logout"><i class="fa-solid fa-arrow-right-from-bracket me-2"></i>Đăng xuất</a></li>
+              </ul>
+            </div>
+          <% } else { %>
+            <!-- Trạng thái CHƯA đăng nhập -->
+            <a href="/login" class="btn btn-outline-dark fw-medium px-4">Đăng nhập</a>
+            <a href="/register" class="btn btn-primary px-4">Đăng ký</a>
+          <% } %>
         </div>
       </div>
     </div>

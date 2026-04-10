@@ -1,0 +1,66 @@
+<%- include('../partials/header') %>
+<link rel="stylesheet" href="/assets/css/login.css">
+
+<div class="login-wrapper">
+  <div class="container">
+    <div class="row w-100 mx-0 justify-content-center">
+      <div class="col-12 col-md-8 col-lg-5 col-xl-4 px-0">
+        <div class="login-card card border-0 shadow-lg rounded-4 overflow-hidden">
+          
+          <div class="card-body p-4 p-md-5">
+            <div class="text-center mb-4">
+              <a href="/" class="text-decoration-none d-inline-block mb-3">
+                <h3 class="fw-bold mb-0 text-dark brand-logo">
+                  <i class="fa-solid fa-bicycle text-primary me-2"></i>Crank<span class="text-primary">Up</span>
+                </h3>
+              </a>
+              <h5 class="fw-bold text-dark">Chào mừng trở lại!</h5>
+              <p class="text-muted small">Vui lòng đăng nhập để tiếp tục</p>
+            </div>
+
+            <!-- Khối Báo Lỗi/Thành công Động từ Server -->
+            <% if(error_msg) { %>
+              <div class="alert alert-danger py-2 small fw-medium"><i class="fa-solid fa-circle-exclamation me-1"></i> <%= error_msg %></div>
+            <% } %>
+            <% if(success_msg) { %>
+              <div class="alert alert-success py-2 small fw-medium"><i class="fa-solid fa-circle-check me-1"></i> <%= success_msg %></div>
+            <% } %>
+
+            <form action="/login" method="POST">
+              <div class="mb-3">
+                <label for="email" class="form-label text-muted fw-medium small mb-1">Email của bạn</label>
+                <div class="input-group">
+                  <span class="input-group-text bg-light border-end-0 text-muted"><i class="fa-regular fa-envelope"></i></span>
+                  <input type="email" class="form-control bg-light border-start-0 ps-0 shadow-none py-2" id="email" name="email" placeholder="example@gmail.com" required>
+                </div>
+              </div>
+
+              <div class="mb-4">
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                  <label for="password" class="form-label text-muted fw-medium small mb-0">Mật khẩu</label>
+                  <a href="#" class="text-decoration-none small text-primary fw-medium">Quên mật khẩu?</a>
+                </div>
+                <div class="input-group">
+                  <span class="input-group-text bg-light border-end-0 text-muted"><i class="fa-solid fa-lock"></i></span>
+                  <input type="password" class="form-control bg-light border-start-0 ps-0 shadow-none py-2" id="password" name="password" placeholder="••••••••" required>
+                </div>
+              </div>
+
+              <button type="submit" class="btn btn-primary w-100 py-2 mb-3 fw-bold shadow-sm rounded-3">
+                Đăng Nhập
+              </button>
+
+              <div class="text-center mt-4">
+                <span class="text-muted small">Chưa có tài khoản?</span>
+                <a href="/register" class="fw-bold text-primary text-decoration-none ms-1">Đăng ký ngay</a>
+              </div>
+            </form>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<%- include('../partials/footer') %>
