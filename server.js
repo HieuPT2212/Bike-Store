@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const app = express();
 const port = 3000;
@@ -26,7 +27,7 @@ app.use((req, res, next) => {
   res.locals.user = req.session.user || null;
   res.locals.error_msg = req.session.error_msg || null;
   res.locals.success_msg = req.session.success_msg || null;
-  req.session.error_msg = null; 
+  req.session.error_msg = null;
   req.session.success_msg = null;
   next();
 });
@@ -37,9 +38,9 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // Khởi tạo kết nối đến MySQL
 const db = mysql.createConnection({
-  host: 'localhost',
-  user: 'root',
-  password: '22122005'
+  host: process.env.HOSTNAMEDB,
+  user: process.env.USERNAMEDB,
+  password: process.env.PASSWORDDB
 });
 
 // Kết nối Database
@@ -49,17 +50,62 @@ db.connect((err) => {
     console.log('Hãy đảm bảo bạn đã bật dịch vụ MySQL (ví dụ: qua XAMPP).');
   } else {
     console.log('Đã kết nối thành công tới máy chủ MySQL!');
-    
+
     // Tự động tạo CSDL dự án nếu chưa có
     db.query('CREATE DATABASE IF NOT EXISTS CrankUp_DB', (err) => {
       if (err) {
         console.error('Lỗi khởi tạo CSDL:', err);
       } else {
         console.log('Đã nạp CSDL CrankUp_DB thành công.');
-        
+
         // Trỏ vào CSDL vừa tạo để làm việc
         db.query('USE CrankUp_DB', (err) => {
-            if(err) console.error(err);
+          if (err) console.error(err);
+          
+          // Tạo bảng USERS nếu chưa có
+          const createUsersTable = `
+            CREATE TABLE IF NOT EXISTS USERS (
+              id INT AUTO_INCREMENT PRIMARY KEY,
+              full_name VARCHAR(100) NOT NULL,
+              email VARCHAR(100) NOT NULL UNIQUE,
+              phone VARCHAR(20),
+              password_hash VARCHAR(255) NOT NULL,
+              avatar_url VARCHAR(255),
+              role VARCHAR(50) DEFAULT 'user',
+              rating_score DECIMAL(3, 1) DEFAULT 5.0,
+              created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+          `;
+          db.query(createUsersTable, (err) => {
+            if (err) console.error('Lỗi tạo bảng USERS:', err);
+            else {
+              console.log('Đã kiểm tra/tạo bảng USERS.');
+              // Sau khi có bảng USERS, tạo bảng BIKES
+              const createBikesTable = `
+                CREATE TABLE IF NOT EXISTS BIKES (
+                  id INT AUTO_INCREMENT PRIMARY KEY,
+                  name VARCHAR(255) NOT NULL,
+                  category VARCHAR(100) NOT NULL,
+                  brand VARCHAR(100),
+                  bike_condition VARCHAR(100),
+                  frame_size VARCHAR(50),
+                  location VARCHAR(100) NOT NULL,
+                  price DECIMAL(15,2) NOT NULL,
+                  description TEXT,
+                  is_inspected BOOLEAN DEFAULT FALSE,
+                  inspection_date VARCHAR(50),
+                  images JSON,
+                  seller_id INT NOT NULL,
+                  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                  FOREIGN KEY (seller_id) REFERENCES USERS(id) ON DELETE CASCADE
+                )
+              `;
+              db.query(createBikesTable, (err) => {
+                if (err) console.error('Lỗi tạo bảng BIKES:', err);
+                else console.log('Đã kiểm tra/tạo bảng BIKES.');
+              });
+            }
+          });
         });
       }
     });
@@ -74,64 +120,34 @@ app.get('/', (req, res) => {
   res.render('index');
 });
 
-// Trang Mua xe (Dùng Mockup Data từ mảng Array)
+// Trang Mua xe (Đã tích hợp Database)
 app.get('/bikes', (req, res) => {
-  const fakeBikes = [
-    {
-      id: 1,
-      name: 'Giant XTC 800 Đời Mới Nhất Bản Quốc Tế',
-      category: 'Địa hình (MTB)',
-      location: 'Hà Nội',
-      desc: 'Giảm xóc khí kép, xích hợp kim chịu lực, phuộc hơi xịn. Đã bảo dưỡng mỡ bò trơn tru...',
-      price: 12500000,
-      is_inspected: true,
-      img_url: 'https://images.unsplash.com/photo-1485965120184-e220f721d03e?ixlib=rb-4.0.3&w=800&q=80',
-      seller_name: 'Hoàng Anh',
-      seller_avatar: 'https://randomuser.me/api/portraits/men/32.jpg',
-      seller_rating: 4.8
-    },
-    {
-      id: 2,
-      name: 'Trek Madone Carbon siêu lướt',
-      category: 'Đua (Road)',
-      location: 'TP.HCM',
-      desc: 'Sườn Carbon OCLV, Group Sram E-tap điện tử 12 Cấp, chạy bứt tốc đường cao tốc khỏi chê.',
-      price: 85000000,
-      is_inspected: true,
-      img_url: 'https://images.unsplash.com/photo-1507035895480-2b3156c31fc8?ixlib=rb-4.0.3&w=800&q=80',
-      seller_name: 'Biker Miền Nam',
-      seller_avatar: 'https://randomuser.me/api/portraits/women/44.jpg',
-      seller_rating: 4.9
-    },
-    {
-      id: 3,
-      name: 'Specialized Stumpjumper Cũ',
-      category: 'Địa hình (MTB)',
-      location: 'Đà Nẵng',
-      desc: 'Lốp thủng nhẹ đã dán, giảm xóc Fox Factory bao phê. Thích hợp mua về đua giải địa hình.',
-      price: 36000000,
-      is_inspected: false,
-      img_url: 'https://images.unsplash.com/photo-1532298229144-0ec0c57515c7?ixlib=rb-4.0.3&w=800&q=80',
-      seller_name: 'Lê Khoa',
-      seller_avatar: 'https://randomuser.me/api/portraits/men/85.jpg',
-      seller_rating: 4.0
-    },
-    {
-      id: 4,
-      name: 'Trinx Free 2.0 Nhôm',
-      category: 'Phố (Touring)',
-      location: 'Cần Thơ',
-      desc: 'Xe đi chợ của bà xã, nay bả không đi chợ xa nữa nên thanh lý. Có giỏ xe tặng kèm.',
-      price: 2500000,
-      is_inspected: false,
-      img_url: 'https://images.unsplash.com/photo-1576435728678-68d0fbf94e91?ixlib=rb-4.0.3&w=800&q=80',
-      seller_name: 'Ông Trùm Trái Cây',
-      seller_avatar: 'https://randomuser.me/api/portraits/men/15.jpg',
-      seller_rating: 4.6
+  const query = `
+    SELECT BIKES.*, USERS.full_name AS seller_name, USERS.avatar_url AS seller_avatar, USERS.rating_score AS seller_rating 
+    FROM BIKES 
+    JOIN USERS ON BIKES.seller_id = USERS.id
+    ORDER BY BIKES.created_at DESC
+  `;
+  
+  db.query(query, (err, results) => {
+    if (err) {
+      console.error('Lỗi khi lấy danh sách xe:', err);
+      return res.status(500).send('Lỗi Server Nội Bộ');
     }
-  ];
+    
+    // Parse JSON images cho từng xe và set img_url là ảnh đầu tiên
+    const bikes = results.map(bike => {
+      let images = [];
+      try {
+        images = typeof bike.images === 'string' ? JSON.parse(bike.images) : bike.images;
+      } catch (e) {}
+      bike.img_url = (images && images.length > 0) ? images[0] : 'https://images.unsplash.com/photo-1485965120184-e220f721d03e?ixlib=rb-4.0.3&w=800&q=80';
+      bike.desc = bike.description; // Giữ nguyên tên biến desc cho template cũ
+      return bike;
+    });
 
-  res.render('bikes', { bikes: fakeBikes });
+    res.render('bikes', { bikes: bikes });
+  });
 });
 
 // Các trang tĩnh hoặc đang xây dựng
@@ -155,7 +171,7 @@ app.post('/register', async (req, res) => {
         req.session.error_msg = 'Lỗi kết nối CSDL, thử lại sau.';
         return res.redirect('/register');
       }
-      
+
       if (results.length > 0) {
         req.session.error_msg = 'Email này đã tồn tại trong hệ thống CrankUp!';
         return res.redirect('/register');
@@ -169,8 +185,8 @@ app.post('/register', async (req, res) => {
       const query = `INSERT INTO USERS (full_name, email, phone, password_hash, role) VALUES (?, ?, ?, ?, ?)`;
       db.query(query, [full_name, email, phone, hashedPassword, role], (err, result) => {
         if (err) {
-            req.session.error_msg = 'Có lỗi xảy ra khi lưu trữ thông tin!';
-            return res.redirect('/register');
+          req.session.error_msg = 'Có lỗi xảy ra khi lưu trữ thông tin!';
+          return res.redirect('/register');
         }
         req.session.success_msg = 'Chúc mừng bạn gia nhập CrankUp! Hãy đăng nhập để duyệt xe nhé.';
         res.redirect('/login'); // Chuyển chớp nhoáng sang trang Đăng Nhập
@@ -185,14 +201,14 @@ app.post('/register', async (req, res) => {
 // API: Xử lý Submit Form Đăng Nhập
 app.post('/login', (req, res) => {
   const { email, password } = req.body;
-  
+
   // 1. Mò tìm người dùng theo Email
   db.query('SELECT * FROM USERS WHERE email = ?', [email], async (err, results) => {
     if (err) {
-        req.session.error_msg = 'Dịch vụ CSDL đang bảo trì!';
-        return res.redirect('/login');
+      req.session.error_msg = 'Dịch vụ CSDL đang bảo trì!';
+      return res.redirect('/login');
     }
-    
+
     // Nếu rỗng (Tức là không ai xài email này)
     if (results.length === 0) {
       req.session.error_msg = 'Email hoặc tài khoản không tồn tại.';
@@ -200,10 +216,10 @@ app.post('/login', (req, res) => {
     }
 
     const user = results[0];
-    
+
     // 2. So găng mật khẩu ngón tay với mật khẩu băm trong DB
     const isMatch = await bcrypt.compare(password, user.password_hash);
-    
+
     if (!isMatch) {
       req.session.error_msg = 'Mật khẩu sai, xin mời nhập lại.';
       return res.redirect('/login');
@@ -217,9 +233,9 @@ app.post('/login', (req, res) => {
       role: user.role,
       rating_score: user.rating_score
     };
-    
+
     // Trả khách hàng về giao diện chính
-    res.redirect('/'); 
+    res.redirect('/');
   });
 });
 
@@ -232,32 +248,60 @@ app.get('/logout', (req, res) => {
 app.get('/sell', (req, res) => res.send('<h1 style="text-align:center; margin-top:50px;">Trang Đăng Bán Xe (Seller) đang được xây dựng...</h1><div style="text-align:center"><a href="/">Về trang chủ</a></div>'));
 app.get('/about', (req, res) => res.send('<h1 style="text-align:center; margin-top:50px;">Về CrankUp - Hệ thống kết nối mua bán xe đạp...</h1><div style="text-align:center"><a href="/">Về trang chủ</a></div>'));
 app.get('/bike/:id', (req, res) => {
-  const mockBike = {
-    id: req.params.id,
-    name: 'Giant XTC 800 Đời Mới Nhất Bản Quốc Tế',
-    category: 'Địa hình (MTB)',
-    location: 'Hà Nội',
-    brand: 'Giant',
-    condition: 'Mới 95%',
-    frame_size: 'M (1m65-1m75)',
-    price: 12500000,
-    is_inspected: true,
-    inspection_date: '04/04/2026',
-    desc: 'Giảm xóc khí kép, xích hợp kim chịu lực, phuộc hơi xịn. Đã bảo dưỡng mỡ bò trơn tru. \n\nXe chủ yếu đi lòng vòng công viên nên lớp sơn còn cực kỳ bóng bẩy, chưa hề có dấu hiệu móp méo nứt gãy. Bộ truyền động sang số cực êm ái.\n- Bánh xe hợp kim nhôm.\n- Phanh đĩa dầu thủy lực siêu nhạy.\n- Chắn bùn được tặng kèm theo cho ai nhiệt tình.',
-    images: [
-      'https://images.unsplash.com/photo-1485965120184-e220f721d03e?ixlib=rb-4.0.3&w=1200&q=80',
-      'https://images.unsplash.com/photo-1511994298241-608e28f14fde?ixlib=rb-4.0.3&w=1200&q=80',
-      'https://images.unsplash.com/photo-1576435728678-68d0fbf94e91?ixlib=rb-4.0.3&w=1200&q=80'
-    ],
-    seller: {
-      name: 'Hoàng Anh',
-      avatar: 'https://randomuser.me/api/portraits/men/32.jpg',
-      rating: 4.8,
-      join_date: 'Tháng 12, 2024',
-      phone: '0987.xxx.xxx'
+  const bikeId = req.params.id;
+  const query = `
+    SELECT BIKES.*, USERS.full_name AS seller_name, USERS.avatar_url AS seller_avatar, USERS.rating_score AS seller_rating, USERS.created_at AS seller_join_date, USERS.phone AS seller_phone
+    FROM BIKES 
+    JOIN USERS ON BIKES.seller_id = USERS.id
+    WHERE BIKES.id = ?
+  `;
+
+  db.query(query, [bikeId], (err, results) => {
+    if (err) {
+      console.error('Lỗi khi lấy chi tiết xe:', err);
+      return res.status(500).send('Lỗi Server Nội Bộ');
     }
-  };
-  res.render('bike-detail', { bike: mockBike });
+
+    if (results.length === 0) {
+      return res.status(404).send('Không tìm thấy xe đạp này');
+    }
+
+    const bikeData = results[0];
+    
+    // Parse JSON images
+    let images = [];
+    try {
+      images = typeof bikeData.images === 'string' ? JSON.parse(bikeData.images) : bikeData.images;
+    } catch (e) {}
+
+    // Xử lý ngày tham gia
+    const joinDate = new Date(bikeData.seller_join_date);
+    const formattedJoinDate = 'Tháng ' + (joinDate.getMonth() + 1) + ', ' + joinDate.getFullYear();
+
+    const bike = {
+      id: bikeData.id,
+      name: bikeData.name,
+      category: bikeData.category,
+      location: bikeData.location,
+      brand: bikeData.brand,
+      condition: bikeData.bike_condition,
+      frame_size: bikeData.frame_size,
+      price: bikeData.price,
+      is_inspected: bikeData.is_inspected,
+      inspection_date: bikeData.inspection_date,
+      desc: bikeData.description,
+      images: (images && images.length > 0) ? images : ['https://images.unsplash.com/photo-1485965120184-e220f721d03e?ixlib=rb-4.0.3&w=1200&q=80'],
+      seller: {
+        name: bikeData.seller_name,
+        avatar: bikeData.seller_avatar || 'https://randomuser.me/api/portraits/lego/1.jpg',
+        rating: bikeData.seller_rating,
+        join_date: formattedJoinDate,
+        phone: bikeData.seller_phone || 'Chưa cập nhật'
+      }
+    };
+
+    res.render('bike-detail', { bike: bike });
+  });
 });
 
 // Lắng nghe trên cổng 3000
