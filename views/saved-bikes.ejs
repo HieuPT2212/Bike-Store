@@ -1,0 +1,92 @@
+<%- include('partials/header') %>
+<link rel="stylesheet" href="/assets/css/bikes.css">
+
+<!-- Spacer offset cho thanh điều hướng Navbar (Fix dính trên trần) -->
+<div style="margin-top: 85px;"></div>
+
+<div class="container py-4 my-3 bg-white shadow-sm rounded-4">
+  <!-- Đường dẫn phân cấp (Breadcrumbs) -->
+  <nav aria-label="breadcrumb" class="mb-4 px-2">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="/" class="text-decoration-none fw-medium text-primary">Trang chủ</a></li>
+      <li class="breadcrumb-item active text-muted" aria-current="page">Xe Đã Lưu Của Tôi</li>
+    </ol>
+  </nav>
+
+  <div class="row g-4 mt-1">
+    <main class="col-12 px-lg-4">
+      <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 pb-3 border-bottom">
+        <h4 class="fw-bold mb-3 mb-md-0 text-dark">Danh sách yêu thích (<span class="text-primary"><%= bikes ? bikes.length : 0 %></span> xe)</h4>
+      </div>
+
+      <% if(typeof error_msg !== 'undefined' && error_msg) { %>
+        <div class="alert alert-danger rounded-3"><i class="fa-solid fa-triangle-exclamation me-2"></i> <%= error_msg %></div>
+      <% } %>
+      <% if(typeof success_msg !== 'undefined' && success_msg) { %>
+        <div class="alert alert-success rounded-3"><i class="fa-solid fa-circle-check me-2"></i> <%= success_msg %></div>
+      <% } %>
+
+      <div class="row g-4">
+        <% if(bikes && bikes.length > 0) { %>
+          <% bikes.forEach(function(bike) { %>
+            <div class="col-12 col-md-4 col-xl-3">
+              <a href="/bike/<%= bike.id %>" class="text-decoration-none text-dark">
+                <div class="card bike-card h-100 border-0 bg-light">
+                  <div class="card-img-wrapper position-relative">
+                    <!-- Nút Bỏ Lưu (Mở rộng sau: Gửi POST để xóa khỏi SAVED_BIKES) -->
+                    <!-- Tạm thời vẫn là trái tim đỏ -->
+                    <div style="position: absolute; top: 10px; right: 10px; z-index: 10;">
+                      <button class="btn btn-light rounded-circle shadow-sm text-danger p-2" title="Đã lưu">
+                        <i class="fa-solid fa-heart"></i>
+                      </button>
+                    </div>
+
+                    <% if(bike.is_inspected) { %>
+                      <span class="badge-inspected"><i class="fa-solid fa-shield-check"></i> Đã có báo cáo kiểm định</span>
+                    <% } %>
+                    <img src="<%= bike.img_url %>" class="card-img-top object-fit-cover" alt="<%= bike.name %>" style="height: 200px;">
+                  </div>
+
+                  <div class="card-body p-4 d-flex flex-column bg-white rounded-bottom-4 shadow-sm">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                      <span class="badge bg-secondary bg-opacity-10 text-dark border px-2 py-1"><%= bike.category %></span>
+                      <span class="text-muted small fw-medium"><i class="fa-solid fa-location-dot text-danger me-1"></i><%= bike.location %></span>
+                    </div>
+                    
+                    <h5 class="card-title fw-bold mb-2 text-truncate" title="<%= bike.name %>"><%= bike.name %></h5>
+                    
+                    <div class="border-top pt-3 mt-auto d-flex justify-content-between align-items-center">
+                      <div class="seller-info d-flex align-items-center gap-2">
+                        <img src="<%= bike.seller_avatar %>" alt="Avatar" class="rounded-circle object-fit-cover" width="35" height="35">
+                        <div class="d-flex flex-column">
+                          <span class="fw-bold text-dark" style="font-size: 0.85rem;"><%= bike.seller_name %></span>
+                          <span class="text-warning fw-medium" style="font-size: 0.75rem;">
+                            <i class="fa-solid fa-star"></i> <%= bike.seller_rating %>
+                          </span>
+                        </div>
+                      </div>
+                      <div class="price-tag fw-bold text-primary fs-5">
+                        <%= new Intl.NumberFormat('vi-VN').format(bike.price) %><span class="fs-6 text-muted ms-1">đ</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </a>
+            </div>
+          <% }); %>
+        <% } else { %>
+          <div class="col-12 text-center py-5">
+            <div class="p-5 bg-light border rounded-4 border-dashed">
+              <i class="fa-regular fa-heart fa-4x text-secondary mb-3 opacity-50"></i>
+              <h5 class="text-dark fw-bold">Chưa có xe nào trong danh sách!</h5>
+              <p class="text-muted">Bạn chưa lưu chiếc xe nào. Hãy lướt tìm những mẫu xe ưng ý và bấm thả tim để lưu lại nhé.</p>
+              <a href="/bikes" class="btn btn-outline-primary mt-3 px-4 rounded-pill">Khám phá xe ngay</a>
+            </div>
+          </div>
+        <% } %>
+      </div>
+    </main>
+  </div>
+</div>
+
+<%- include('partials/footer') %>

@@ -33,6 +33,31 @@ app.use((req, res, next) => {
 });
 app.set('views', path.join(__dirname, 'views'));
 
+// Middleware kiểm tra đăng nhập
+function checkAuth(req, res, next) {
+  if (!req.session.user) {
+    req.session.error_msg = 'Vui lòng đăng nhập để sử dụng tính năng này!';
+    return res.redirect('/login');
+  }
+  next();
+}
+
+// Middleware kiểm tra phân quyền (Role)
+function checkRole(role) {
+  return (req, res, next) => {
+    if (!req.session.user) {
+      req.session.error_msg = 'Vui lòng đăng nhập!';
+      return res.redirect('/login');
+    }
+    // Admin có quyền truy cập mọi nơi (hoặc bạn có thể strict hơn nếu cần)
+    if (req.session.user.role !== role && req.session.user.role !== 'admin') {
+      req.session.error_msg = 'Bạn không có quyền truy cập khu vực này!';
+      return res.redirect('/');
+    }
+    next();
+  };
+}
+
 // Cấu hình thư mục Public chứa CSS, JS, Images (Bootstrap offline)
 app.use(express.static(path.join(__dirname, 'public')));
 
@@ -102,7 +127,45 @@ db.connect((err) => {
               `;
               db.query(createBikesTable, (err) => {
                 if (err) console.error('Lỗi tạo bảng BIKES:', err);
-                else console.log('Đã kiểm tra/tạo bảng BIKES.');
+                else {
+                  console.log('Đã kiểm tra/tạo bảng BIKES.');
+                  
+                  // 1. Tạo bảng MESSAGES
+                  const createMessagesTable = `
+                    CREATE TABLE IF NOT EXISTS MESSAGES (
+                      id INT AUTO_INCREMENT PRIMARY KEY,
+                      sender_id INT NOT NULL,
+                      receiver_id INT NOT NULL,
+                      bike_id INT NOT NULL,
+                      content TEXT NOT NULL,
+                      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                      FOREIGN KEY (sender_id) REFERENCES USERS(id) ON DELETE CASCADE,
+                      FOREIGN KEY (receiver_id) REFERENCES USERS(id) ON DELETE CASCADE,
+                      FOREIGN KEY (bike_id) REFERENCES BIKES(id) ON DELETE CASCADE
+                    )
+                  `;
+                  db.query(createMessagesTable, (err) => {
+                    if (err) console.error('Lỗi tạo bảng MESSAGES:', err);
+                    else console.log('Đã kiểm tra/tạo bảng MESSAGES.');
+                  });
+
+                  // 2. Tạo bảng SAVED_BIKES
+                  const createSavedBikesTable = `
+                    CREATE TABLE IF NOT EXISTS SAVED_BIKES (
+                      id INT AUTO_INCREMENT PRIMARY KEY,
+                      user_id INT NOT NULL,
+                      bike_id INT NOT NULL,
+                      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                      FOREIGN KEY (user_id) REFERENCES USERS(id) ON DELETE CASCADE,
+                      FOREIGN KEY (bike_id) REFERENCES BIKES(id) ON DELETE CASCADE,
+                      UNIQUE(user_id, bike_id)
+                    )
+                  `;
+                  db.query(createSavedBikesTable, (err) => {
+                    if (err) console.error('Lỗi tạo bảng SAVED_BIKES:', err);
+                    else console.log('Đã kiểm tra/tạo bảng SAVED_BIKES.');
+                  });
+                }
               });
             }
           });
@@ -120,16 +183,48 @@ app.get('/', (req, res) => {
   res.render('index');
 });
 
-// Trang Mua xe (Đã tích hợp Database)
+// Trang Mua xe (Đã tích hợp Lọc & Tìm kiếm)
 app.get('/bikes', (req, res) => {
-  const query = `
+  let query = `
     SELECT BIKES.*, USERS.full_name AS seller_name, USERS.avatar_url AS seller_avatar, USERS.rating_score AS seller_rating 
     FROM BIKES 
     JOIN USERS ON BIKES.seller_id = USERS.id
-    ORDER BY BIKES.created_at DESC
+    WHERE 1=1
   `;
+  const queryParams = [];
+
+  // Lọc theo hãng xe (có thể là mảng nếu chọn nhiều checkbox)
+  if (req.query.brand) {
+    const brands = Array.isArray(req.query.brand) ? req.query.brand : [req.query.brand];
+    query += ` AND BIKES.brand IN (?)`;
+    queryParams.push(brands);
+  }
+
+  // Lọc theo khoảng giá
+  if (req.query.price_range) {
+    switch (req.query.price_range) {
+      case 'under_5': query += ` AND BIKES.price < 5000000`; break;
+      case '5_to_15': query += ` AND BIKES.price BETWEEN 5000000 AND 15000000`; break;
+      case '15_to_50': query += ` AND BIKES.price BETWEEN 15000000 AND 50000000`; break;
+      case 'over_50': query += ` AND BIKES.price > 50000000`; break;
+    }
+  }
+
+  // Lọc theo kiểm định
+  if (req.query.is_inspected === 'on') {
+    query += ` AND BIKES.is_inspected = TRUE`;
+  }
+
+  // Sắp xếp
+  if (req.query.sort === 'price_asc') {
+    query += ` ORDER BY BIKES.price ASC`;
+  } else if (req.query.sort === 'price_desc') {
+    query += ` ORDER BY BIKES.price DESC`;
+  } else {
+    query += ` ORDER BY BIKES.created_at DESC`; // Mặc định là mới nhất
+  }
   
-  db.query(query, (err, results) => {
+  db.query(query, queryParams, (err, results) => {
     if (err) {
       console.error('Lỗi khi lấy danh sách xe:', err);
       return res.status(500).send('Lỗi Server Nội Bộ');
@@ -146,7 +241,7 @@ app.get('/bikes', (req, res) => {
       return bike;
     });
 
-    res.render('bikes', { bikes: bikes });
+    res.render('bikes', { bikes: bikes, queryParams: req.query }); // Truyền lại query để fill form
   });
 });
 
@@ -245,7 +340,37 @@ app.get('/logout', (req, res) => {
   res.redirect('/login');
 });
 
-app.get('/sell', (req, res) => res.send('<h1 style="text-align:center; margin-top:50px;">Trang Đăng Bán Xe (Seller) đang được xây dựng...</h1><div style="text-align:center"><a href="/">Về trang chủ</a></div>'));
+app.get('/sell', checkAuth, (req, res) => res.render('sell'));
+
+app.post('/sell', checkAuth, (req, res) => {
+  const { name, category, brand, bike_condition, frame_size, location, price, description, img_url } = req.body;
+  const seller_id = req.session.user.id;
+  
+  // Lưu images dưới dạng JSON array (hỗ trợ nhập 1 link ảnh trực tiếp)
+  let imagesArr = [];
+  if (img_url && img_url.trim() !== '') {
+    imagesArr.push(img_url.trim());
+  } else {
+    imagesArr.push('https://images.unsplash.com/photo-1485965120184-e220f721d03e?ixlib=rb-4.0.3&w=1200&q=80'); // Ảnh mặc định
+  }
+  const images = JSON.stringify(imagesArr);
+
+  const query = `
+    INSERT INTO BIKES (name, category, brand, bike_condition, frame_size, location, price, description, images, seller_id) 
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `;
+  
+  db.query(query, [name, category, brand, bike_condition, frame_size, location, price, description, images, seller_id], (err, result) => {
+    if (err) {
+      console.error('Lỗi khi đăng bán xe:', err);
+      req.session.error_msg = 'Có lỗi xảy ra khi lưu thông tin xe!';
+      return res.redirect('/sell');
+    }
+    req.session.success_msg = 'Đăng bán xe thành công! Xe của bạn đã được đưa lên sàn.';
+    res.redirect('/bikes');
+  });
+});
+
 app.get('/about', (req, res) => res.send('<h1 style="text-align:center; margin-top:50px;">Về CrankUp - Hệ thống kết nối mua bán xe đạp...</h1><div style="text-align:center"><a href="/">Về trang chủ</a></div>'));
 app.get('/bike/:id', (req, res) => {
   const bikeId = req.params.id;
@@ -292,6 +417,7 @@ app.get('/bike/:id', (req, res) => {
       desc: bikeData.description,
       images: (images && images.length > 0) ? images : ['https://images.unsplash.com/photo-1485965120184-e220f721d03e?ixlib=rb-4.0.3&w=1200&q=80'],
       seller: {
+        id: bikeData.seller_id,
         name: bikeData.seller_name,
         avatar: bikeData.seller_avatar || 'https://randomuser.me/api/portraits/lego/1.jpg',
         rating: bikeData.seller_rating,
@@ -301,6 +427,210 @@ app.get('/bike/:id', (req, res) => {
     };
 
     res.render('bike-detail', { bike: bike });
+  });
+});
+
+// API: Lưu xe yêu thích
+app.post('/save-bike/:id', checkAuth, (req, res) => {
+  const bikeId = req.params.id;
+  const userId = req.session.user.id;
+
+  // Sử dụng INSERT IGNORE để không bị lỗi nếu người dùng bấm lưu nhiều lần cùng 1 xe
+  db.query('INSERT IGNORE INTO SAVED_BIKES (user_id, bike_id) VALUES (?, ?)', [userId, bikeId], (err) => {
+    if (err) {
+      console.error('Lỗi khi lưu xe:', err);
+      req.session.error_msg = 'Lỗi hệ thống khi lưu xe yêu thích.';
+    } else {
+      req.session.success_msg = 'Đã lưu xe vào danh mục yêu thích cá nhân!';
+    }
+    // Trở lại trang trước đó
+    const backURL = req.header('Referer') || '/bikes';
+    res.redirect(backURL);
+  });
+});
+
+// Trang: Xem xe yêu thích
+app.get('/saved-bikes', checkAuth, (req, res) => {
+  const userId = req.session.user.id;
+  const query = `
+    SELECT BIKES.*, USERS.full_name AS seller_name, USERS.avatar_url AS seller_avatar, USERS.rating_score AS seller_rating 
+    FROM SAVED_BIKES
+    JOIN BIKES ON SAVED_BIKES.bike_id = BIKES.id
+    JOIN USERS ON BIKES.seller_id = USERS.id
+    WHERE SAVED_BIKES.user_id = ?
+    ORDER BY SAVED_BIKES.created_at DESC
+  `;
+
+  db.query(query, [userId], (err, results) => {
+    if (err) {
+      console.error('Lỗi khi lấy xe yêu thích:', err);
+      return res.status(500).send('Lỗi Server Nội Bộ');
+    }
+
+    const bikes = results.map(bike => {
+      let images = [];
+      try {
+        images = typeof bike.images === 'string' ? JSON.parse(bike.images) : bike.images;
+      } catch (e) {}
+      bike.img_url = (images && images.length > 0) ? images[0] : 'https://images.unsplash.com/photo-1485965120184-e220f721d03e?ixlib=rb-4.0.3&w=800&q=80';
+      bike.desc = bike.description;
+      return bike;
+    });
+
+    res.render('saved-bikes', { bikes: bikes });
+  });
+});
+
+// API: Gửi tin nhắn
+app.post('/message/:bikeId', checkAuth, (req, res) => {
+  const bikeId = req.params.bikeId;
+  const senderId = req.session.user.id;
+  const { content, receiver_id } = req.body;
+
+  if (!content || !receiver_id) {
+    req.session.error_msg = 'Tin nhắn không hợp lệ.';
+    return res.redirect('back');
+  }
+
+  db.query('INSERT INTO MESSAGES (sender_id, receiver_id, bike_id, content) VALUES (?, ?, ?, ?)', 
+    [senderId, receiver_id, bikeId, content], (err) => {
+    if (err) {
+      console.error('Lỗi khi gửi tin nhắn:', err);
+      req.session.error_msg = 'Có lỗi xảy ra, không thể gửi tin nhắn.';
+    } else {
+      req.session.success_msg = 'Gửi tin nhắn thành công! Người dùng sẽ sớm nhận được.';
+    }
+    const backURL = req.header('Referer') || `/bike/${bikeId}`;
+    res.redirect(backURL);
+  });
+});
+
+// Trang: Hộp thư
+app.get('/messages', checkAuth, (req, res) => {
+  const userId = req.session.user.id;
+  const query = `
+    SELECT M.*, 
+           S.full_name AS sender_name, S.avatar_url AS sender_avatar,
+           R.full_name AS receiver_name, R.avatar_url AS receiver_avatar,
+           B.name AS bike_name
+    FROM MESSAGES M
+    JOIN USERS S ON M.sender_id = S.id
+    JOIN USERS R ON M.receiver_id = R.id
+    JOIN BIKES B ON M.bike_id = B.id
+    WHERE M.sender_id = ? OR M.receiver_id = ?
+    ORDER BY M.created_at DESC
+  `;
+
+  db.query(query, [userId, userId], (err, results) => {
+    if (err) {
+      console.error('Lỗi khi lấy tin nhắn:', err);
+      return res.status(500).send('Lỗi Server');
+    }
+    res.render('messages', { messages: results, currentUserId: userId });
+  });
+});
+
+// Phân hệ: Inspector (Người kiểm định)
+app.get('/inspector', checkRole('inspector'), (req, res) => {
+  const query = `
+    SELECT BIKES.*, USERS.full_name AS seller_name 
+    FROM BIKES 
+    JOIN USERS ON BIKES.seller_id = USERS.id
+    WHERE BIKES.is_inspected = FALSE
+    ORDER BY BIKES.created_at ASC
+  `;
+
+  db.query(query, (err, results) => {
+    if (err) {
+      console.error('Lỗi khi tải trang inspector:', err);
+      return res.status(500).send('Lỗi Server');
+    }
+    
+    const bikes = results.map(bike => {
+      let images = [];
+      try {
+        images = typeof bike.images === 'string' ? JSON.parse(bike.images) : bike.images;
+      } catch (e) {}
+      bike.img_url = (images && images.length > 0) ? images[0] : 'https://images.unsplash.com/photo-1485965120184-e220f721d03e?ixlib=rb-4.0.3&w=800&q=80';
+      return bike;
+    });
+
+    res.render('inspector-dashboard', { bikes: bikes });
+  });
+});
+
+app.post('/inspector/verify/:bikeId', checkRole('inspector'), (req, res) => {
+  const bikeId = req.params.bikeId;
+  const dateStr = new Date().toLocaleDateString('vi-VN');
+  
+  db.query('UPDATE BIKES SET is_inspected = TRUE, inspection_date = ? WHERE id = ?', [dateStr, bikeId], (err) => {
+    if (err) {
+      console.error('Lỗi khi kiểm định xe:', err);
+      req.session.error_msg = 'Lỗi hệ thống khi cập nhật trạng thái kiểm định.';
+    } else {
+      req.session.success_msg = `Kiểm định thành công xe có mã ID: ${bikeId}!`;
+    }
+    res.redirect('/inspector');
+  });
+});
+
+// Phân hệ: Admin (Quản trị viên)
+app.get('/admin', checkRole('admin'), (req, res) => {
+  // Lấy danh sách Users
+  db.query('SELECT * FROM USERS ORDER BY created_at DESC', (err1, users) => {
+    if (err1) return res.status(500).send('Lỗi máy chủ');
+    
+    // Lấy danh sách Bikes
+    const queryBikes = `
+      SELECT BIKES.*, USERS.full_name AS seller_name 
+      FROM BIKES 
+      JOIN USERS ON BIKES.seller_id = USERS.id
+      ORDER BY BIKES.created_at DESC
+    `;
+    db.query(queryBikes, (err2, bikes) => {
+      if (err2) return res.status(500).send('Lỗi máy chủ');
+      
+      const processedBikes = bikes.map(bike => {
+        let images = [];
+        try {
+          images = typeof bike.images === 'string' ? JSON.parse(bike.images) : bike.images;
+        } catch (e) {}
+        bike.img_url = (images && images.length > 0) ? images[0] : 'https://images.unsplash.com/photo-1485965120184-e220f721d03e?ixlib=rb-4.0.3&w=800&q=80';
+        return bike;
+      });
+
+      res.render('admin-dashboard', { users: users, bikes: processedBikes });
+    });
+  });
+});
+
+app.post('/admin/delete-user/:id', checkRole('admin'), (req, res) => {
+  // Không cho tự xóa chính mình
+  if (req.params.id == req.session.user.id) {
+    req.session.error_msg = 'Bạn không thể tự xóa tài khoản Admin của chính mình!';
+    return res.redirect('/admin');
+  }
+
+  db.query('DELETE FROM USERS WHERE id = ?', [req.params.id], (err) => {
+    if (err) {
+      console.error(err);
+      req.session.error_msg = 'Không thể xóa người dùng này (có thể do ràng buộc dữ liệu).';
+    } else {
+      req.session.success_msg = 'Đã xóa người dùng thành công.';
+    }
+    res.redirect('/admin');
+  });
+});
+
+app.post('/admin/delete-bike/:id', checkRole('admin'), (req, res) => {
+  db.query('DELETE FROM BIKES WHERE id = ?', [req.params.id], (err) => {
+    if (err) {
+      console.error(err);
+      req.session.error_msg = 'Không thể xóa bài đăng xe này.';
+    } else {
+      req.session.success_msg = 'Đã xóa bài đăng xe thành công.';
+    }
+    res.redirect('/admin');
   });
 });
 

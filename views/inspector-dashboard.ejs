@@ -1,0 +1,104 @@
+<%- include('partials/header') %>
+<link rel="stylesheet" href="/assets/css/bikes.css">
+
+<div style="margin-top: 85px;"></div>
+
+<div class="container py-5 my-3 bg-white shadow-sm rounded-4">
+  <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom">
+    <h3 class="fw-bold text-dark"><i class="fa-solid fa-shield-check text-success me-2"></i> Bảng Điều Khiển Kiểm Định (Inspector)</h3>
+    <span class="badge bg-primary fs-6">Chờ kiểm định: <%= bikes ? bikes.length : 0 %></span>
+  </div>
+
+  <% if(typeof error_msg !== 'undefined' && error_msg) { %>
+    <div class="alert alert-danger rounded-3"><i class="fa-solid fa-triangle-exclamation me-2"></i> <%= error_msg %></div>
+  <% } %>
+  <% if(typeof success_msg !== 'undefined' && success_msg) { %>
+    <div class="alert alert-success rounded-3"><i class="fa-solid fa-circle-check me-2"></i> <%= success_msg %></div>
+  <% } %>
+
+  <% if(bikes && bikes.length > 0) { %>
+    <div class="table-responsive">
+      <table class="table table-hover align-middle border">
+        <thead class="table-light">
+          <tr>
+            <th scope="col" width="100">Hình ảnh</th>
+            <th scope="col">Tên xe & Thông tin</th>
+            <th scope="col">Mức giá</th>
+            <th scope="col">Người đăng</th>
+            <th scope="col" width="150" class="text-center">Hành động</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% bikes.forEach(function(bike) { %>
+            <tr>
+              <td>
+                <img src="<%= bike.img_url %>" alt="<%= bike.name %>" class="rounded-3 object-fit-cover" width="80" height="60">
+              </td>
+              <td>
+                <a href="/bike/<%= bike.id %>" class="fw-bold text-dark text-decoration-none d-block mb-1" target="_blank"><%= bike.name %> <i class="fa-solid fa-arrow-up-right-from-square small ms-1 text-muted"></i></a>
+                <span class="badge bg-secondary bg-opacity-10 text-dark border px-2 py-1 small fw-normal"><%= bike.brand %></span>
+                <span class="badge bg-secondary bg-opacity-10 text-dark border px-2 py-1 small fw-normal ms-1"><%= bike.condition %></span>
+              </td>
+              <td>
+                <span class="fw-bold text-primary"><%= new Intl.NumberFormat('vi-VN').format(bike.price) %>đ</span>
+              </td>
+              <td>
+                <span class="fw-medium text-dark"><%= bike.seller_name %></span>
+              </td>
+              <td class="text-center">
+                <button type="button" class="btn btn-success btn-sm fw-bold px-3 shadow-sm rounded-pill" data-bs-toggle="modal" data-bs-target="#verifyModal<%= bike.id %>">
+                  <i class="fa-solid fa-check me-1"></i> Cấp Tem
+                </button>
+              </td>
+            </tr>
+
+            <!-- Modal Xác Nhận Kiểm Định -->
+            <div class="modal fade" id="verifyModal<%= bike.id %>" tabindex="-1" aria-hidden="true">
+              <div class="modal-dialog">
+                <form action="/inspector/verify/<%= bike.id %>" method="POST">
+                  <div class="modal-content">
+                    <div class="modal-header bg-success text-white">
+                      <h5 class="modal-title fw-bold"><i class="fa-solid fa-shield-check me-2"></i> Xác nhận cấp tem kiểm định</h5>
+                      <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                      <p>Bạn đang cấp tem chuyên gia cho chiếc xe:</p>
+                      <div class="p-3 bg-light rounded border mb-3">
+                        <div class="fw-bold"><%= bike.name %></div>
+                        <div class="small text-muted mt-1">Đăng bởi: <%= bike.seller_name %></div>
+                      </div>
+                      <p class="small text-muted mb-0"><i class="fa-solid fa-circle-info text-primary me-1"></i> Bằng việc cấp tem, bạn xác nhận rằng chiếc xe này đã được đội ngũ CrankUp kiểm tra và đạt tiêu chuẩn chất lượng.</p>
+                      
+                      <!-- Phần tải file PDF giả lập (chưa xử lý backend upload file thực tế) -->
+                      <div class="mt-3">
+                        <label class="form-label fw-bold small">Đính kèm báo cáo PDF (URL / Link Google Drive)</label>
+                        <input type="url" class="form-control form-control-sm" placeholder="https://drive.google.com/..." required>
+                      </div>
+
+                    </div>
+                    <div class="modal-footer">
+                      <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                      <button type="submit" class="btn btn-success fw-bold"><i class="fa-solid fa-check me-2"></i> Xác Nhận Cấp Tem</button>
+                    </div>
+                  </div>
+                </form>
+              </div>
+            </div>
+
+          <% }); %>
+        </tbody>
+      </table>
+    </div>
+  <% } else { %>
+    <div class="text-center py-5">
+      <div class="p-5 bg-light border rounded-4 border-dashed">
+        <i class="fa-solid fa-clipboard-check fa-4x text-success mb-3 opacity-50"></i>
+        <h5 class="text-dark fw-bold">Không có xe nào cần kiểm định!</h5>
+        <p class="text-muted">Tất cả xe trên sàn đã được xử lý xong.</p>
+      </div>
+    </div>
+  <% } %>
+
+</div>
+
+<%- include('partials/footer') %>

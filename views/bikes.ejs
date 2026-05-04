@@ -16,58 +16,68 @@
   <div class="row g-4 mt-1">
     <!-- CỘT BÊN TRÁI: Thanh tìm kiếm & Thanh Lọc (Sidebar) -->
     <aside class="col-lg-3 border-end pe-lg-4">
-      <div class="mb-5">
-        <h5 class="fw-bold mb-4 d-flex align-items-center"><i class="fa-solid fa-filter text-primary me-2"></i> Lọc Kết Quả</h5>
-        
-        <!-- Nhóm lọc: Hãng Xe -->
-        <h6 class="fw-bold mb-3 text-dark">Hãng Sản Xuất</h6>
-        <div class="form-check mb-2">
-          <input class="form-check-input" type="checkbox" value="" id="brandGiant" checked>
-          <label class="form-check-label text-muted" for="brandGiant">Giant</label>
+      <% const currentQuery = typeof queryParams !== 'undefined' ? queryParams : {}; %>
+      <% const isBrandChecked = (val) => {
+           if(!currentQuery.brand) return false;
+           if(Array.isArray(currentQuery.brand)) return currentQuery.brand.includes(val);
+           return currentQuery.brand === val;
+         };
+      %>
+      <form id="filterForm" action="/bikes" method="GET">
+        <div class="mb-5">
+          <h5 class="fw-bold mb-4 d-flex align-items-center"><i class="fa-solid fa-filter text-primary me-2"></i> Lọc Kết Quả</h5>
+          
+          <!-- Nhóm lọc: Hãng Xe -->
+          <h6 class="fw-bold mb-3 text-dark">Hãng Sản Xuất</h6>
+          <div class="form-check mb-2">
+            <input class="form-check-input" type="checkbox" name="brand" value="Giant" id="brandGiant" <%= isBrandChecked('Giant') ? 'checked' : '' %>>
+            <label class="form-check-label text-muted" for="brandGiant">Giant</label>
+          </div>
+          <div class="form-check mb-2">
+            <input class="form-check-input" type="checkbox" name="brand" value="Trek" id="brandTrek" <%= isBrandChecked('Trek') ? 'checked' : '' %>>
+            <label class="form-check-label text-muted" for="brandTrek">Trek</label>
+          </div>
+          <div class="form-check mb-2">
+            <input class="form-check-input" type="checkbox" name="brand" value="Trinx" id="brandTrinx" <%= isBrandChecked('Trinx') ? 'checked' : '' %>>
+            <label class="form-check-label text-muted" for="brandTrinx">Trinx</label>
+          </div>
+          <div class="form-check mb-2">
+            <input class="form-check-input" type="checkbox" name="brand" value="Specialized" id="brandSpecialized" <%= isBrandChecked('Specialized') ? 'checked' : '' %>>
+            <label class="form-check-label text-muted" for="brandSpecialized">Specialized / S-Works</label>
+          </div>
         </div>
-        <div class="form-check mb-2">
-          <input class="form-check-input" type="checkbox" value="" id="brandTrek">
-          <label class="form-check-label text-muted" for="brandTrek">Trek</label>
+
+        <hr class="text-muted opacity-25">
+
+        <!-- Nhóm lọc: Mức Giá -->
+        <div class="mb-5 mt-4">
+          <h6 class="fw-bold mb-3 text-dark">Mức Giá</h6>
+          <select name="price_range" class="form-select text-muted shadow-none bg-light border-0 py-2">
+            <option value="" <%= !currentQuery.price_range ? 'selected' : '' %>>Tất cả mức giá</option>
+            <option value="under_5" <%= currentQuery.price_range === 'under_5' ? 'selected' : '' %>>Dưới 5 Triệu VNĐ</option>
+            <option value="5_to_15" <%= currentQuery.price_range === '5_to_15' ? 'selected' : '' %>>Từ 5 - 15 Triệu VNĐ</option>
+            <option value="15_to_50" <%= currentQuery.price_range === '15_to_50' ? 'selected' : '' %>>Từ 15 - 50 Triệu VNĐ</option>
+            <option value="over_50" <%= currentQuery.price_range === 'over_50' ? 'selected' : '' %>>Trên 50 Triệu VNĐ</option>
+          </select>
         </div>
-        <div class="form-check mb-2">
-          <input class="form-check-input" type="checkbox" value="" id="brandTrinx">
-          <label class="form-check-label text-muted" for="brandTrinx">Trinx</label>
+
+        <hr class="text-muted opacity-25">
+
+        <!-- Nút Gạt: Cờ "Xe Đã Kiểm Định" do chuyên gia cấp -->
+        <div class="mb-4 mt-4 bg-light p-3 rounded-3 border">
+          <div class="form-check form-switch d-flex align-items-center gap-2 m-0 p-0">
+            <input class="form-check-input ms-0 mt-0" type="checkbox" name="is_inspected" role="switch" id="switchInspected" style="width: 40px; height: 20px;" <%= currentQuery.is_inspected === 'on' ? 'checked' : '' %>>
+            <label class="form-check-label fw-medium text-dark ms-2" for="switchInspected" style="font-size: 0.95rem;">
+              Chỉ hiển thị xe có <br><i class="fa-solid fa-shield-check text-success"></i> Tem Chuyên Gia
+            </label>
+          </div>
         </div>
-        <div class="form-check mb-2">
-          <input class="form-check-input" type="checkbox" value="" id="brandSpecialized">
-          <label class="form-check-label text-muted" for="brandSpecialized">Specialized / S-Works</label>
-        </div>
-      </div>
 
-      <hr class="text-muted opacity-25">
-
-      <!-- Nhóm lọc: Mức Giá -->
-      <div class="mb-5 mt-4">
-        <h6 class="fw-bold mb-3 text-dark">Mức Giá</h6>
-        <select class="form-select text-muted shadow-none bg-light border-0 py-2">
-          <option selected>Tất cả mức giá</option>
-          <option>Dưới 5 Triệu VNĐ</option>
-          <option>Từ 5 - 15 Triệu VNĐ</option>
-          <option>Từ 15 - 50 Triệu VNĐ</option>
-          <option>Trên 50 Triệu VNĐ</option>
-        </select>
-      </div>
-
-      <hr class="text-muted opacity-25">
-
-      <!-- Nút Gạt: Cờ "Xe Đã Kiểm Định" do chuyên gia cấp -->
-      <div class="mb-4 mt-4 bg-light p-3 rounded-3 border">
-        <div class="form-check form-switch d-flex align-items-center gap-2 m-0 p-0">
-          <input class="form-check-input ms-0 mt-0" type="checkbox" role="switch" id="switchInspected" style="width: 40px; height: 20px;" checked>
-          <label class="form-check-label fw-medium text-dark ms-2" for="switchInspected" style="font-size: 0.95rem;">
-            Chỉ hiển thị xe có <br><i class="fa-solid fa-shield-check text-success"></i> Tem Chuyên Gia
-          </label>
-        </div>
-      </div>
-
-      <button class="btn btn-primary w-100 py-2 mt-2 fw-bold text-uppercase box-shadow-hover">
-        <i class="fa-solid fa-list-check me-1"></i> Áp Dụng Lọc
-      </button>
+        <button type="submit" class="btn btn-primary w-100 py-2 mt-2 fw-bold text-uppercase box-shadow-hover">
+          <i class="fa-solid fa-list-check me-1"></i> Áp Dụng Lọc
+        </button>
+        <a href="/bikes" class="btn btn-outline-secondary w-100 py-2 mt-2 fw-bold text-uppercase box-shadow-hover">Xóa Bộ Lọc</a>
+      </form>
     </aside>
 
     <!-- CỘT BÊN PHẢI: Lưới hiển thị danh sách Xe Phù Hợp (Grid Cards) -->
@@ -77,11 +87,10 @@
         <h4 class="fw-bold mb-3 mb-md-0 text-dark">Đã tìm thấy <span class="text-primary"><%= bikes ? bikes.length : 0 %></span> mẫu xe</h4>
         <div class="d-flex align-items-center gap-2">
           <span class="text-muted small text-nowrap">Sắp xếp theo:</span>
-          <select class="form-select w-auto shadow-none text-dark bg-light border-0 form-select-sm py-2 px-3 fw-medium">
-            <option selected>Tương thích nhất</option>
-            <option>Mới đăng gần đây</option>
-            <option>Giá: Tăng dần</option>
-            <option>Giá: Giảm dần</option>
+          <select name="sort" form="filterForm" onchange="document.getElementById('filterForm').submit()" class="form-select w-auto shadow-none text-dark bg-light border-0 form-select-sm py-2 px-3 fw-medium">
+            <option value="" <%= typeof queryParams === 'undefined' || !queryParams.sort ? 'selected' : '' %>>Mới đăng gần đây</option>
+            <option value="price_asc" <%= typeof queryParams !== 'undefined' && queryParams.sort === 'price_asc' ? 'selected' : '' %>>Giá: Tăng dần</option>
+            <option value="price_desc" <%= typeof queryParams !== 'undefined' && queryParams.sort === 'price_desc' ? 'selected' : '' %>>Giá: Giảm dần</option>
           </select>
         </div>
       </div>
@@ -93,7 +102,13 @@
             <div class="col-12 col-md-6 col-xl-4">
               <a href="/bike/<%= bike.id %>" class="text-decoration-none text-dark">
                 <div class="card bike-card h-100 border-0 bg-light">
-                  <div class="card-img-wrapper">
+                  <div class="card-img-wrapper position-relative">
+                    <!-- Nút Lưu yêu thích -->
+                    <form action="/save-bike/<%= bike.id %>" method="POST" style="position: absolute; top: 10px; right: 10px; z-index: 10;">
+                      <button type="submit" class="btn btn-light rounded-circle shadow-sm text-danger p-2" title="Lưu xe này" onclick="event.stopPropagation(); event.preventDefault(); this.form.submit();">
+                        <i class="fa-regular fa-heart"></i>
+                      </button>
+                    </form>
                     <!-- Logical IF: Hiện Badge nếu is_inspected là TRUE -->
                     <% if(bike.is_inspected) { %>
                       <span class="badge-inspected"><i class="fa-solid fa-shield-check"></i> Đã có báo cáo kiểm định</span>
@@ -140,7 +155,7 @@
               <i class="fa-solid fa-box-open fa-4x text-secondary mb-3 opacity-50"></i>
               <h5 class="text-dark fw-bold">Hiện không có chiếc xe nào!</h5>
               <p class="text-muted">Bộ lọc đang giới hạn kết quả, hãy thử bỏ bớt điều kiện lọc hoặc quay lại sau.</p>
-              <button class="btn btn-outline-primary mt-3 px-4 rounded-pill">Xóa toàn bộ bộ lọc</button>
+              <a href="/bikes" class="btn btn-outline-primary mt-3 px-4 rounded-pill">Xóa toàn bộ bộ lọc</a>
             </div>
           </div>
         <% } %>

@@ -1,0 +1,137 @@
+<%- include('partials/header') %>
+
+<div style="margin-top: 85px;"></div>
+
+<div class="container-fluid py-4 px-lg-5">
+  <div class="row mb-4">
+    <div class="col-12">
+      <h2 class="fw-bold text-dark border-bottom pb-3"><i class="fa-solid fa-user-tie text-primary me-2"></i> Hệ Thống Quản Trị CrankUp</h2>
+    </div>
+  </div>
+
+  <% if(typeof error_msg !== 'undefined' && error_msg) { %>
+    <div class="alert alert-danger rounded-3"><i class="fa-solid fa-triangle-exclamation me-2"></i> <%= error_msg %></div>
+  <% } %>
+  <% if(typeof success_msg !== 'undefined' && success_msg) { %>
+    <div class="alert alert-success rounded-3"><i class="fa-solid fa-circle-check me-2"></i> <%= success_msg %></div>
+  <% } %>
+
+  <ul class="nav nav-pills mb-4 gap-2" id="adminTabs" role="tablist">
+    <li class="nav-item" role="presentation">
+      <button class="nav-link active rounded-pill px-4 fw-bold shadow-sm" id="users-tab" data-bs-toggle="pill" data-bs-target="#users" type="button" role="tab">
+        <i class="fa-solid fa-users me-2"></i> Quản lý Người dùng
+      </button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link rounded-pill px-4 fw-bold shadow-sm" id="bikes-tab" data-bs-toggle="pill" data-bs-target="#bikes" type="button" role="tab">
+        <i class="fa-solid fa-bicycle me-2"></i> Quản lý Bài đăng Xe
+      </button>
+    </li>
+  </ul>
+
+  <div class="tab-content" id="adminTabsContent">
+    
+    <!-- Tab Người dùng -->
+    <div class="tab-pane fade show active" id="users" role="tabpanel">
+      <div class="card border-0 shadow-sm rounded-4 mb-4">
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th class="ps-4">ID</th>
+                  <th>Họ Tên</th>
+                  <th>Email</th>
+                  <th>Vai trò (Role)</th>
+                  <th>Ngày tham gia</th>
+                  <th class="text-end pe-4">Hành động</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% if(users && users.length > 0) { %>
+                  <% users.forEach(user => { %>
+                    <tr>
+                      <td class="ps-4 fw-bold text-muted">#<%= user.id %></td>
+                      <td class="fw-bold"><%= user.full_name %></td>
+                      <td><%= user.email %></td>
+                      <td>
+                        <span class="badge <%= user.role === 'admin' ? 'bg-danger' : (user.role === 'inspector' ? 'bg-success' : 'bg-primary') %>">
+                          <%= user.role.toUpperCase() %>
+                        </span>
+                      </td>
+                      <td><%= new Date(user.created_at).toLocaleDateString('vi-VN') %></td>
+                      <td class="text-end pe-4">
+                        <% if(user.role !== 'admin') { %>
+                          <form action="/admin/delete-user/<%= user.id %>" method="POST" class="d-inline" onsubmit="return confirm('Bạn có chắc chắn muốn xóa người dùng này? Mọi dữ liệu liên quan cũng sẽ bị xóa vĩnh viễn.');">
+                            <button type="submit" class="btn btn-outline-danger btn-sm rounded-pill px-3 fw-bold">
+                              <i class="fa-solid fa-trash me-1"></i> Xóa
+                            </button>
+                          </form>
+                        <% } else { %>
+                          <button class="btn btn-secondary btn-sm rounded-pill px-3 fw-bold" disabled>Tối cao</button>
+                        <% } %>
+                      </td>
+                    </tr>
+                  <% }); %>
+                <% } %>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab Bài đăng Xe -->
+    <div class="tab-pane fade" id="bikes" role="tabpanel">
+      <div class="card border-0 shadow-sm rounded-4">
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th class="ps-4">ID</th>
+                  <th>Hình ảnh</th>
+                  <th>Tên Xe</th>
+                  <th>Người bán</th>
+                  <th>Kiểm định</th>
+                  <th>Trạng thái</th>
+                  <th class="text-end pe-4">Hành động</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% if(bikes && bikes.length > 0) { %>
+                  <% bikes.forEach(bike => { %>
+                    <tr>
+                      <td class="ps-4 fw-bold text-muted">#<%= bike.id %></td>
+                      <td><img src="<%= bike.img_url %>" class="rounded object-fit-cover" width="60" height="40"></td>
+                      <td><a href="/bike/<%= bike.id %>" class="fw-bold text-dark text-decoration-none" target="_blank"><%= bike.name %></a></td>
+                      <td><%= bike.seller_name %></td>
+                      <td>
+                        <% if(bike.is_inspected) { %>
+                          <span class="text-success fw-bold small"><i class="fa-solid fa-check-circle"></i> Đã duyệt</span>
+                        <% } else { %>
+                          <span class="text-warning fw-bold small"><i class="fa-solid fa-clock"></i> Chờ duyệt</span>
+                        <% } %>
+                      </td>
+                      <td><span class="badge bg-success bg-opacity-10 text-success border border-success">Đang hiển thị</span></td>
+                      <td class="text-end pe-4">
+                        <form action="/admin/delete-bike/<%= bike.id %>" method="POST" class="d-inline" onsubmit="return confirm('Bạn có chắc muốn xóa bài đăng xe này?');">
+                          <button type="submit" class="btn btn-outline-danger btn-sm rounded-pill px-3 fw-bold">
+                            <i class="fa-solid fa-trash me-1"></i> Xóa Bài
+                          </button>
+                        </form>
+                      </td>
+                    </tr>
+                  <% }); %>
+                <% } %>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<%- include('partials/footer') %>

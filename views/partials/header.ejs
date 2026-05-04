@@ -50,12 +50,17 @@
                 <span><%= user.full_name %></span>
               </a>
               <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 mt-2">
-                <li><a class="dropdown-item py-2" href="#"><i class="fa-regular fa-user me-2 text-muted"></i>Hồ sơ cá nhân</a></li>
-                <% if(user.role === 'Seller') { %>
-                  <li><a class="dropdown-item py-2" href="/sell"><i class="fa-solid fa-store me-2 text-muted"></i>Quản lý cửa hàng</a></li>
+                <li><a class="dropdown-item py-2" href="/saved-bikes"><i class="fa-solid fa-heart me-2 text-danger"></i> Xe đã lưu</a></li>
+                <li><a class="dropdown-item py-2" href="/messages"><i class="fa-solid fa-envelope me-2 text-primary"></i> Hộp thư</a></li>
+                <li><a class="dropdown-item py-2" href="/sell"><i class="fa-solid fa-plus me-2 text-muted"></i> Đăng bán xe</a></li>
+                <% if(user.role === 'inspector' || user.role === 'admin') { %>
+                  <li><a class="dropdown-item py-2 text-success" href="/inspector"><i class="fa-solid fa-shield-check me-2"></i> Khu vực Kiểm định</a></li>
+                <% } %>
+                <% if(user.role === 'admin') { %>
+                  <li><a class="dropdown-item py-2 text-primary fw-bold" href="/admin"><i class="fa-solid fa-user-tie me-2"></i> Trang Quản trị</a></li>
                 <% } %>
                 <li><hr class="dropdown-divider"></li>
-                <li><a class="dropdown-item text-danger py-2" href="/logout"><i class="fa-solid fa-arrow-right-from-bracket me-2"></i>Đăng xuất</a></li>
+                <li><a class="dropdown-item text-danger py-2" href="/logout"><i class="fa-solid fa-arrow-right-from-bracket me-2"></i> Đăng xuất</a></li>
               </ul>
             </div>
           <% } else { %>

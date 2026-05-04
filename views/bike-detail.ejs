@@ -14,6 +14,13 @@
     </ol>
   </nav>
 
+  <% if(typeof error_msg !== 'undefined' && error_msg) { %>
+    <div class="alert alert-danger rounded-3"><i class="fa-solid fa-triangle-exclamation me-2"></i> <%= error_msg %></div>
+  <% } %>
+  <% if(typeof success_msg !== 'undefined' && success_msg) { %>
+    <div class="alert alert-success rounded-3"><i class="fa-solid fa-circle-check me-2"></i> <%= success_msg %></div>
+  <% } %>
+
   <div class="row g-5">
     <!-- Cột TRÁI: Hình ảnh và Mô Tả Chi Tiết -->
     <div class="col-lg-8">
@@ -106,12 +113,14 @@
           <i class="fa-solid fa-money-bill-wave me-1"></i> Tiến Hành Đặt Cọc
         </button>
         <div class="d-flex gap-2">
-          <button class="btn btn-outline-primary flex-grow-1 py-2 rounded-3 fw-medium d-flex justify-content-center align-items-center gap-2 border-2">
-            <i class="fa-solid fa-comments"></i> Mặc Cả
+          <button type="button" class="btn btn-outline-primary flex-grow-1 py-2 rounded-3 fw-medium d-flex justify-content-center align-items-center gap-2 border-2" data-bs-toggle="modal" data-bs-target="#messageModal">
+            <i class="fa-solid fa-comments"></i> Nhắn Tin Mặc Cả
           </button>
-          <button class="btn btn-outline-secondary py-2 px-3 rounded-3 fw-medium d-flex justify-content-center align-items-center border-2">
-            <i class="fa-regular fa-heart"></i>
-          </button>
+          <form action="/save-bike/<%= bike.id %>" method="POST" class="m-0 p-0 d-flex">
+            <button type="submit" class="btn btn-outline-secondary py-2 px-3 rounded-3 fw-medium d-flex justify-content-center align-items-center border-2 text-danger" title="Lưu yêu thích">
+              <i class="fa-regular fa-heart"></i>
+            </button>
+          </form>
         </div>
 
       </div>
@@ -141,6 +150,35 @@
       </div>
       
     </div>
+  </div>
+</div>
+
+<!-- Modal Nhắn Tin -->
+<div class="modal fade" id="messageModal" tabindex="-1" aria-labelledby="messageModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <form action="/message/<%= bike.id %>" method="POST">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title fw-bold text-primary" id="messageModalLabel">Nhắn tin về: <%= bike.name %></h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <input type="hidden" name="receiver_id" value="<%= bike.seller.id %>">
+          <div class="mb-3">
+            <label class="form-label fw-bold">Người nhận:</label>
+            <input type="text" class="form-control bg-light border-0" value="<%= bike.seller.name %>" readonly>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-bold">Nội dung tin nhắn <span class="text-danger">*</span></label>
+            <textarea name="content" class="form-control" rows="4" required placeholder="Nhập tin nhắn để hỏi thêm thông tin, thương lượng giá cả..."></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+          <button type="submit" class="btn btn-primary"><i class="fa-solid fa-paper-plane me-2"></i> Gửi Tin Nhắn</button>
+        </div>
+      </div>
+    </form>
   </div>
 </div>
 

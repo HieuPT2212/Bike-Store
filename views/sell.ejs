@@ -1,0 +1,99 @@
+<%- include('partials/header') %>
+<div style="margin-top: 85px;"></div>
+
+<div class="container py-5 my-3">
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+      <div class="card border-0 shadow-sm rounded-4">
+        <div class="card-body p-5">
+          <h2 class="fw-bold mb-4 text-center text-primary">Đăng Tin Bán Xe</h2>
+          <p class="text-muted text-center mb-5">Nhập đầy đủ thông tin để người mua có thể dễ dàng tìm thấy chiếc xe của bạn.</p>
+
+          <% if(error_msg) { %>
+            <div class="alert alert-danger rounded-3"><i class="fa-solid fa-triangle-exclamation me-2"></i> <%= error_msg %></div>
+          <% } %>
+          <% if(success_msg) { %>
+            <div class="alert alert-success rounded-3"><i class="fa-solid fa-circle-check me-2"></i> <%= success_msg %></div>
+          <% } %>
+
+          <form action="/sell" method="POST">
+            <div class="row g-3">
+              <div class="col-md-12 mb-3">
+                <label class="form-label fw-bold">Tên / Tiêu đề xe <span class="text-danger">*</span></label>
+                <input type="text" name="name" class="form-control bg-light border-0" required placeholder="Ví dụ: Giant XTC 800 Đời 2023">
+              </div>
+
+              <div class="col-md-6 mb-3">
+                <label class="form-label fw-bold">Thương hiệu</label>
+                <select name="brand" class="form-select bg-light border-0">
+                  <option value="Giant">Giant</option>
+                  <option value="Trek">Trek</option>
+                  <option value="Trinx">Trinx</option>
+                  <option value="Specialized">Specialized / S-Works</option>
+                  <option value="Khác">Khác</option>
+                </select>
+              </div>
+
+              <div class="col-md-6 mb-3">
+                <label class="form-label fw-bold">Danh mục loại xe</label>
+                <select name="category" class="form-select bg-light border-0">
+                  <option value="Xe đạp địa hình (MTB)">Xe đạp địa hình (MTB)</option>
+                  <option value="Xe đạp đua (Road)">Xe đạp đua (Road)</option>
+                  <option value="Xe đạp dạo phố (City)">Xe đạp dạo phố (City)</option>
+                  <option value="Khác">Khác</option>
+                </select>
+              </div>
+
+              <div class="col-md-6 mb-3">
+                <label class="form-label fw-bold">Tình trạng</label>
+                <select name="bike_condition" class="form-select bg-light border-0">
+                  <option value="Như mới (Like New)">Như mới (Like New)</option>
+                  <option value="Đã sử dụng - Tốt">Đã sử dụng - Tốt</option>
+                  <option value="Đã sử dụng - Khá">Đã sử dụng - Khá</option>
+                  <option value="Cần bảo dưỡng">Cần bảo dưỡng</option>
+                </select>
+              </div>
+
+              <div class="col-md-6 mb-3">
+                <label class="form-label fw-bold">Kích cỡ khung</label>
+                <select name="frame_size" class="form-select bg-light border-0">
+                  <option value="S">S</option>
+                  <option value="M">M</option>
+                  <option value="L">L</option>
+                  <option value="XL">XL</option>
+                </select>
+              </div>
+
+              <div class="col-md-6 mb-3">
+                <label class="form-label fw-bold">Mức giá đề xuất (VNĐ) <span class="text-danger">*</span></label>
+                <input type="number" name="price" class="form-control bg-light border-0" required placeholder="Ví dụ: 15000000">
+              </div>
+
+              <div class="col-md-6 mb-3">
+                <label class="form-label fw-bold">Khu vực xem xe <span class="text-danger">*</span></label>
+                <input type="text" name="location" class="form-control bg-light border-0" required placeholder="Ví dụ: Quận 1, TP.HCM">
+              </div>
+
+              <div class="col-md-12 mb-3">
+                <label class="form-label fw-bold">Mô tả chi tiết</label>
+                <textarea name="description" class="form-control bg-light border-0" rows="5" placeholder="Mô tả các phụ tùng đã thay, số km đã chạy, lịch sử sử dụng..."></textarea>
+              </div>
+
+              <div class="col-md-12 mb-4">
+                <label class="form-label fw-bold">Đường dẫn ảnh (URL Image)</label>
+                <input type="url" name="img_url" class="form-control bg-light border-0" placeholder="https://example.com/image.jpg">
+                <div class="form-text mt-2"><i class="fa-solid fa-circle-info text-info me-1"></i> Tạm thời hỗ trợ nhập link ảnh trực tiếp. Để trống sẽ dùng ảnh mặc định.</div>
+              </div>
+
+              <div class="col-12 text-center mt-3">
+                <button type="submit" class="btn btn-primary btn-lg px-5 fw-bold rounded-pill shadow-sm"><i class="fa-solid fa-upload me-2"></i> Đăng Tin Lên Sàn</button>
+              </div>
+            </div>
+          </form>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<%- include('partials/footer') %>
